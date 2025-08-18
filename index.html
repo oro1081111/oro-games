@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>抽象棋首頁 · Games Hub</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: #121a33;
+      --panel-2:#0f1530;
+      --text: #e9eefb;
+      --muted:#9fb0d6;
+      --accent:#6ee7ff;
+      --accent-2:#7c5cff;
+      --good:#00d18f;
+      --bad:#ff5c7c;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+      --ring:#2b396e;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: radial-gradient(1200px 800px at 20% -10%, #1b2352 0%, #0b1020 45%, #070a15 100%);
+      color:var(--text);
+      letter-spacing:.2px;
+    }
+    .wrap{max-width:1100px; margin:32px auto; padding:0 16px;}
+    header{display:flex; align-items:center; justify-content:space-between; gap:12px; margin-bottom:18px;}
+    header h1{font-size:22px; margin:0; letter-spacing:.4px}
+    header .sub{color:var(--muted); font-size:12px}
+    .grid{display:grid; grid-template-columns: repeat(2, 1fr); gap:18px;}
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr;} }
+
+    .card{background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%);
+      border:1px solid #1f2a52; border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column;}
+    .card header{padding:16px 18px; border-bottom:1px solid #24305f}
+    .card header h2{margin:0; font-size:18px}
+    .card header .tag{font-size:11px; color:#b6c4ee; border:1px solid var(--ring); padding:3px 8px; border-radius:999px; margin-left:8px}
+    .card .body{padding:16px 18px; display:grid; grid-template-columns: 1fr 1.1fr; gap:16px; align-items:stretch}
+    @media (max-width: 720px){ .card .body{grid-template-columns:1fr;} }
+
+    .preview{
+      background: #0a0f25; border:1px dashed #233067; border-radius:12px; position:relative; min-height:180px;
+      display:grid; place-items:center; overflow:hidden;
+    }
+    
+
+    .desc{font-size:14px; color:#cfdbff; line-height:1.6}
+    .meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+    .pill{background:#0b1333; border:1px solid #24305f; padding:5px 10px; border-radius:999px; font-size:12px; color:#dbe6ff}
+
+    .actions{padding:16px 18px; border-top:1px solid #24305f; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
+    .btn{cursor:pointer; border:1px solid #394685; background:linear-gradient(180deg,#1a244e,#121a33); padding:10px 14px; font-weight:700; border-radius:10px; color:var(--text); text-decoration:none; display:inline-flex; align-items:center; gap:8px}
+    .btn.primary{background:linear-gradient(180deg, #2a76ff, #2356ce); border-color:#2d5fd1}
+    .btn.ghost{background:transparent}
+    .btn small{opacity:.8; font-weight:600}
+
+    footer{margin-top:18px; padding:12px 4px; font-size:12px; color:#99a4c7; text-align:center}
+    a.inline{color:#6ee7ff; text-decoration:underline}
+    a.inline:hover{color:#fff}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div>
+        <h1>抽象棋 · 遊戲首頁</h1>
+        <div class="sub">選擇一款遊戲開始 · 設計／開發：奧羅</div>
+      </div>
+    </header>
+
+    <section class="grid">
+      <!-- 1) 四色棋 -->
+      <article class="card">
+        <header>
+          <h2>四色棋 Four Color Chess <span class="tag">原創遊戲</span></h2>
+        </header>
+        <div class="body">
+          <div class="preview" aria-hidden="true">
+            <img src="thumb-fcg.png" alt="四色棋縮圖" class="thumb-img" style="max-width:90%;max-height:170px;object-fit:contain;">
+          </div>
+          <div>
+            <p class="desc">玩家將操控4色棋子在棋盤上穿梭，停留的格子顏色即決定對手可移動的棋子，想辦法封鎖對手，讓他無法合法移動，則取得勝利。</p>
+            <div class="meta">
+              <span class="pill">雙人抽象棋</span>
+              <span class="pill">MCTS AI</span>
+              <span class="pill">奧羅桌遊設計工作室原創</span>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <a class="btn primary" href="FCG.html">開始遊玩</a>
+        </div>
+      </article>
+
+      <!-- 2) Four-Moves-Chess -->
+      <article class="card">
+        <header>
+          <h2>四步棋 Four Moves Chess <span class="tag">非原創</span></h2>
+        </header>
+        <div class="body">
+          <div class="preview" aria-hidden="true">
+            <img src="thumb-fmg.png" alt="四步棋縮圖" class="thumb-img" style="max-width:90%;max-height:170px;object-fit:contain;">
+          </div>
+          <div>
+            <p class="desc">玩家依照所在位置數字操控棋子移動 1～4 步，必須跳躍所有棋子與障礙，在越來越少的場地格子中，率先讓對手無路可走者獲勝。</p>
+            <div class="meta">
+              <span class="pill">雙人抽象棋</span>
+              <span class="pill">MCTS AI</span>
+              <span class="pill">UNO跳步棋</span>
+              <span class="pill">設計者未知</span>
+            </div>
+          </div>
+        </div>
+        <div class="actions">
+          <a class="btn primary" href="FMG.html">開始遊玩</a>
+        </div>
+      </article>
+    </section>
+
+    <footer>
+      © 奧羅桌遊設計工作室 · 練習作品 · 建議使用最新 Chrome／Safari · 若圖像未顯示請嘗試重新整理
+    </footer>
+  </div>
+</body>
+</html>

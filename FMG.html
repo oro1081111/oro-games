@@ -1,0 +1,628 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Four-Moves-Chess</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: #121a33;
+      --panel-2:#0f1530;
+      --text: #e9eefb;
+      --muted:#9fb0d6;
+      --accent:#6ee7ff;
+      --accent-2:#7c5cff;
+      --good:#00d18f;
+      --bad:#ff5c7c;
+      --red:#ff5a5a;
+      --blue:#3fa6ff;
+      --cell:#151f43;
+      --cell-h:#1a2552;
+      --cell-ring:#7dd3fc;
+      --x:#6b7280;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+      --logh: 240px; /* 日誌/規則固定高度，與棋盤貼齊 */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: radial-gradient(1200px 800px at 20% -10%, #1b2352 0%, #0b1020 45%, #070a15 100%);
+      color:var(--text);
+      letter-spacing:.2px;
+    }
+    .t-red{color:var(--red)}
+    .t-blue{color:var(--blue)}
+    .app{max-width:1100px;margin:32px auto;padding:0 16px;display:grid;grid-template-columns: 1fr 1fr;gap:20px;align-items:stretch}
+    .card{background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%); border:1px solid #1f2a52;border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; height:100%;}
+    .header{padding:18px 22px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #24305f}
+    .header h1{font-size:20px;margin:0; font-weight:700; letter-spacing:.4px}
+    .header .sub{opacity:.8;font-size:12px}
+
+    .board-wrap{padding:20px}
+    .board{display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; position:relative}
+    .cell{position:relative; aspect-ratio:1 / 1; background:var(--cell); border:1px solid #283569; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:28px; color:#dbe6ff; transition:transform .08s ease, background .15s ease, border-color .2s ease;}
+    .cell:hover{background:var(--cell-h)}
+    .cell.legal{outline: 3px solid var(--cell-ring); outline-offset: -3px; cursor:pointer; box-shadow: 0 0 0 2px rgba(125,211,252,.3) inset}
+    .cell.X{background:transparent; border-color:transparent; color:transparent;}
+    .piece{position:absolute; inset:12%; border-radius:50%; border:6px solid currentColor; background:transparent; box-shadow: 0 2px 10px rgba(0,0,0,.35), 0 0 0 2px rgba(255,255,255,0.04) inset; pointer-events:none}
+    .piece.red{color:var(--red)}
+    .piece.blue{color:var(--blue)}
+    .piece.active{box-shadow: 0 0 0 3px rgba(255,255,255,0.15) inset, 0 0 0 8px rgba(125,211,252,0.22); animation:pulse 1.2s ease-in-out infinite}
+    @keyframes pulse{0%{transform:scale(1)}50%{transform:scale(1.04)}100%{transform:scale(1)}}
+    .anim-piece{position:absolute; border-radius:50%; border:6px solid currentColor; background:transparent; box-shadow: 0 2px 10px rgba(0,0,0,.35), 0 0 0 2px rgba(255,255,255,0.04) inset; pointer-events:none; transition: transform 160ms ease}
+    .anim-piece.red{color:var(--red)}
+    .anim-piece.blue{color:var(--blue)}
+    .coords{position:absolute; bottom:6px; right:8px; font-size:10px; color:#94a3b8; opacity:.6}
+
+    .panel{padding:16px 18px}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .row.nowrap{flex-wrap:nowrap}
+    label{font-size:12px; color:var(--muted)}
+    select,input,textarea,button{background:#0e1430; color:var(--text); border:1px solid #273163; border-radius:10px; padding:8px 10px; font-size:14px}
+    input[type="number"]{width:120px}
+    textarea{width:100%; height:110px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;}
+    button{cursor:pointer; border:1px solid #394685; background:linear-gradient(180deg,#1a244e,#121a33); padding:10px 14px; font-weight:700}
+    button.primary{background:linear-gradient(180deg, #2a76ff, #2356ce); border-color:#2d5fd1}
+    button.ghost{background:transparent}
+
+    .status{padding:10px 18px; display:flex; flex-wrap:wrap; gap:14px; border-top:1px solid #24305f}
+    .pill{background:#0b1333; border:1px solid #24305f; padding:6px 10px; border-radius:999px; font-size:12px; color:#dbe6ff}
+    .pill.good{border-color:#0a6b50; color:#9ef1d2}
+    .pill.bad{border-color:#6b1a2a; color:#ffc4cf}
+
+    /* Tabs (日誌 / 規則) */
+    .tabs{padding:10px 18px; display:flex; gap:10px; border-top:1px solid #24305f; background:#0a0f25}
+    .tab{padding:8px 14px; border-radius:999px; border:1px solid #2b396e; background:#0b1333; color:#dbe6ff; cursor:pointer}
+    .tab.active{background:#1b2a5a; border-color:#3a57a5}
+    .tabwrap{flex:1 1 auto; display:flex; min-height:0}
+    .log{padding:14px 18px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background:#0a0f25; border-top:1px solid #24305f; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius); flex:1 1 auto; min-height:0; height:auto}
+    .log p{margin:6px 0}
+    .rules{padding:16px 18px; overflow:auto; background:#0a0f25; border-top:1px solid #24305f; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius); font-family: inherit; line-height:1.6; flex:1 1 auto; min-height:0; height:auto}
+
+    .hint{font-size:12px; color:var(--muted); padding:0 18px 16px}
+    .sep{height:1px;background:#24305f;margin:14px 0}
+    .footer{padding:12px 18px; font-size:12px; color:#99a4c7; margin-top:auto}
+  
+/* ===== Responsive/mobile fixes ===== */
+.app{display:grid; grid-template-columns: 1.2fr 450px; gap:16px; max-width:1200px; margin:0 auto; padding: max(12px, env(safe-area-inset-top)) 12px 12px 12px;}
+@media (max-width: 900px){ .app{ grid-template-columns:1fr; } .right{ order:2; } .left{ order:1; } .panel{ width:100%; } }
+.board{ max-width: min(92vw, 560px); margin:0 auto; position:relative; }
+.cell{ aspect-ratio: 1 / 1; font-size: clamp(16px, 6vw, 28px); }
+.piece, .anim-piece{ border-width: clamp(4px, 1vw, 6px); }
+@media (max-width: 420px){ .board{ gap:8px; } .cell .coords{ display:none; } }
+.right .card{ max-width:680px; margin:0 auto; }
+.right textarea{ width:100%; min-height:120px; font-size:16px; }
+.right select, .right input, .right button{ font-size:16px; }
+#log{ max-height:none; overflow:auto; }
+.board{ touch-action: manipulation; }
+/* ===== end responsive tweaks ===== */
+  /* ============== 等高設定：右側高度跟隨左側（桌機） ============== */
+.card.right{ height: var(--leftH, auto); }
+@media (max-width: 900px){ .card.right{ height:auto; } }
+  </style>
+  <style>
+    a { color: #6ee7ff; text-decoration: underline; }
+    a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card left">
+      <div class="header">
+        <h1>四步棋 Four-Moves-Chess</h1>
+        <div class="sub">設計者:未知</div>
+      </div>
+      <div class="board-wrap">
+        <div id="board" class="board"></div>
+      </div>
+      <div class="hint" id="hint">紅色玩家請點擊任一高亮格落子</div>
+    </div>
+
+    <div class="card right">
+      <div class="header">
+        <h1>對局設定</h1>
+        <div class="sub">隨機或指定開局、玩家/隨機/AI</div>
+      </div>
+      <div class="panel">
+        <div class="grid2">
+          <div class="row">
+            <label>紅方先手</label>
+            <select id="redType">
+              <option value="human" selected>玩家</option>
+              <option value="random">隨機</option>
+              <option value="ai">AI</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>藍方後手</label>
+            <select id="blueType">
+              <option value="human">玩家</option>
+              <option value="random">隨機</option>
+              <option value="ai" selected>AI</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>開局設置</label>
+            <select id="opening">
+              <option value="random">隨機</option>
+              <option value="standard" selected>標準</option>
+              <option value="same">相同</option>
+            </select>
+          </div>
+          <div class="row nowrap">
+            <label for="iters">AI迭代數</label>
+            <input id="iters" type="number" min="100" step="100" value="2000" />
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="row" style="gap:10px; justify-content:space-between">
+          <button class="primary" id="btnStart">開始新對局</button>
+          <button class="ghost" id="btnReset" onclick="window.location='index.html'">返回主頁</button>
+        </div>
+      </div>
+
+      <!-- Tabs: 日誌 / 規則 -->
+      <div class="tabs">
+        <button id="tabLog"   class="tab active" data-target="log">行動日誌</button>
+        <button id="tabRules" class="tab"        data-target="rules">規則說明</button>
+        <button id="tabAbout" class="tab"        data-target="about">遊戲介紹</button>
+      </div>
+      <div class="tabwrap">
+        <div class="log" id="log"></div>
+        <div class="rules" id="rules" style="display:none">
+          <h3 style="margin:0 0 8px">遊戲規則</h3>
+          <ol style="margin:0 0 8px 18px; padding:0">
+            <li><b>由紅色玩家開始，輪流進行回合行動</b>
+                <li><b>回合行動</b>：
+                  <ul style="margin:8px 0 8px 16px; padding:0">
+                    <li>若所在格為 <b>S</b>：可選擇 <b>1～4</b> 步。</li>
+                    <li>若所在格為數字 <b>n</b>：須走 <b>n</b> 步。</li>
+                    <li>上下左右移動，必須<b>跳過</b>所有<b>空格</b>與<b>棋子</b>。</li>
+                    <li>不可停留在該回合經過的格子上。</li>
+                    <li>回合結束，<b>起始格變為空格</b>。</li>
+                  </ul>
+                </li>
+                <li><b>勝利條件</b>:
+                  <ul style="margin:8px 0 8px 16px; padding:0">
+                    <li>若輪到對手時沒有任何合法落點 → 你獲得勝利。</li>
+                  </ul>
+                </li>
+          </ol>
+        </div>
+        <div class="rules" id="about" style="display:none">
+          <h3 style="margin:0 0 8px">遊戲介紹</h3>
+          <p>此遊戲來源於IG粉專<b>celine.et.sasha</b>的reel影片<b>Idée de jeu avec les cartes UNO ! 😉</b>中所得知的遊戲，但具體設計者不可考，遊戲名稱也是我自己取的，我個人非常喜歡此遊戲，因此做成網頁版分享給大家。</p>
+          <p>來源連結：<a href="https://www.instagram.com/reel/DM0XE8Mo41a/?igsh=MXJic2dpODF4NndxdA==" target="_blank" rel="noopener">Four-Moves-Chess</a></p>
+        </div>
+      </div>
+
+      <div class="footer">奧羅桌遊設計工作室-程式練習作品</div>
+    </div>
+  </div>
+
+  <script>
+    // ====== 遊戲資料結構 ======
+    const DIRS = { U:[-1,0], D:[1,0], L:[0,-1], R:[0,1] };
+    const TILE_SR = 'SR', TILE_SB = 'SB';
+
+    function deepCopyBoard(board){ return board.map(row=>row.map(c=>({tile:c.tile, covered:c.covered}))); }
+
+    class GameJS{
+      constructor(board, redPos, bluePos, turn='R'){
+        this.board = board; // 4x4 of {tile, covered}
+        this.redPos = redPos; // [r,c]
+        this.bluePos = bluePos;
+        this.turn = turn; // 'R' or 'B'
+      }
+      static fromRandom(){
+        const tiles = [1,1,1,1,2,2,2,2,3,3,3,3,4,4,TILE_SR,TILE_SB];
+        for(let i=tiles.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [tiles[i],tiles[j]]=[tiles[j],tiles[i]]; }
+        const board=[]; let red=null, blue=null;
+        for(let r=0;r<4;r++){
+          const row=[];
+          for(let c=0;c<4;c++){
+            const t = tiles[r*4+c];
+            row.push({tile:t, covered:false});
+            if(t===TILE_SR) red=[r,c];
+            if(t===TILE_SB) blue=[r,c];
+          }
+          board.push(row);
+        }
+        return new GameJS(board, red, blue, 'R');
+      }
+      static fromFixed(text, turn='R'){
+        const lines = text.trim().split(/\n+/).slice(0,4);
+        if(lines.length!==4) throw new Error('固定盤面需 4 行');
+        const grid=[]; let red=null, blue=null, sr=null, sb=null;
+        function parseToken(tok){
+          tok = tok.trim().toUpperCase();
+          if(tok==='X') return {tile:1, covered:true};
+          if(tok==='SR'){ return {tile:TILE_SR, covered:false}; }
+          if(tok==='SB'){ return {tile:TILE_SB, covered:false}; }
+          if(/^R[1234]$/.test(tok)){ const n=Number(tok[1]); return {tile:n, covered:false, _piece:'R'}; }
+          if(/^B[1234]$/.test(tok)){ const n=Number(tok[1]); return {tile:n, covered:false, _piece:'B'}; }
+          const n = Number(tok);
+          if(![1,2,3,4].includes(n)) throw new Error('無效的符號：'+tok);
+          return {tile:n, covered:false};
+        }
+        for(let r=0;r<4;r++){
+          const tks = lines[r].trim().split(/\s+/);
+          if(tks.length!==4) throw new Error('第 '+(r+1)+' 行不是 4 欄');
+          const row=tks.map(parseToken);
+          grid.push(row);
+        }
+        for(let r=0;r<4;r++){
+          for(let c=0;c<4;c++){
+            const cell = grid[r][c];
+            if(cell._piece==='R') red=[r,c];
+            if(cell._piece==='B') blue=[r,c];
+            if(cell.tile===TILE_SR) sr=[r,c];
+            if(cell.tile===TILE_SB) sb=[r,c];
+            if(cell._piece) delete cell._piece;
+          }
+        }
+        if(!red){ if(sr) red=sr; }
+        if(!blue){ if(sb) blue=sb; }
+        if(!red||!blue) throw new Error('需提供 R 與 B 的起始位置（可用 Rn/Bn 或 SR/SB）');
+        return new GameJS(grid, red, blue, turn);
+      }
+      clone(){ return new GameJS(deepCopyBoard(this.board), [...this.redPos], [...this.bluePos], this.turn); }
+      inBounds(r,c){ return r>=0&&r<4&&c>=0&&c<4; }
+      isBlocked(r,c){ if(!this.inBounds(r,c)) return true; if(this.board[r][c].covered) return true; if(this.redPos[0]===r&&this.redPos[1]===c) return true; if(this.bluePos[0]===r&&this.bluePos[1]===c) return true; return false; }
+      cell(r,c){ return this.board[r][c]; }
+      currentPlayer(){ return this.turn; }
+      posOf(p){ return p==='R'? this.redPos: this.bluePos; }
+      requiredSteps(){
+        const pos = this.posOf(this.turn); const cell=this.cell(pos[0],pos[1]);
+        if(cell.tile===TILE_SR || cell.tile===TILE_SB) return [1,2,3,4];
+        return [Number(cell.tile)];
+      }
+      stepJump(pos, dirKey){ const [dr,dc]=DIRS[dirKey]; let [r,c]=pos; r+=dr; c+=dc; while(this.inBounds(r,c)){ if(this.isBlocked(r,c)){ r+=dr; c+=dc; continue; } return [r,c]; } return null; }
+      neighborsOne(pos){ const res=[]; for(const d of ['U','D','L','R']){ const nxt=this.stepJump(pos,d); if(nxt) res.push(nxt); } return res; }
+      reachableTargets(){
+        const start = this.posOf(this.turn); const stepsChoices = this.requiredSteps(); const results=new Set();
+        const key=(rc)=> rc[0]+","+rc[1];
+        const dfs=(cur, depth, maxDepth, visitedSet)=>{
+          if(depth===maxDepth){ if(!this.isBlocked(cur[0],cur[1])) results.add(key(cur)); return; }
+          for(const nxt of this.neighborsOne(cur)){
+            const k=key(nxt); if(visitedSet.has(k)) continue; if(this.isBlocked(nxt[0],nxt[1])) continue; const ns=new Set(visitedSet); ns.add(k); dfs(nxt, depth+1, maxDepth, ns);
+          }
+        };
+        const startKey=key(start); for(const k of stepsChoices){ const vis=new Set([startKey]); dfs(start, 0, k, vis); }
+        results.delete(startKey);
+        return Array.from(results).map(s=>s.split(',').map(Number));
+      }
+      isTerminal(){ return this.reachableTargets().length===0; }
+      winner(){ if(!this.isTerminal()) return null; return this.turn==='R'? 'B':'R'; }
+      applyMoveTo(dest){ const key=(rc)=> rc[0]+","+rc[1]; const valids=new Set(this.reachableTargets().map(key)); const dKey=key(dest); if(!valids.has(dKey)) throw new Error('非法目的地');
+        const cur = this.posOf(this.turn); this.cell(cur[0],cur[1]).covered = true;
+        if(this.turn==='R') this.redPos=[dest[0],dest[1]]; else this.bluePos=[dest[0],dest[1]];
+        this.turn = this.turn==='R'? 'B':'R';
+      }
+      possibleStepsStr(pos){ const cell=this.cell(pos[0],pos[1]); if(cell.tile===TILE_SR||cell.tile===TILE_SB) return '1~4'; return String(cell.tile); }
+    }
+
+    // ====== 簡易 MCTS ======
+    class MCTS{
+      constructor({iterations=1500, c_ucb=Math.SQRT2, rolloutMax=30}={}){
+        this.iterations = iterations;
+        this.c_ucb = c_ucb;
+        this.rolloutMax = rolloutMax;
+      }
+      chooseWithStats(game){
+        const t0 = performance.now();
+        const root = { game: game.clone(), parent: null, move: null, children: [], untried: [...game.reachableTargets()], visits: 0, value: 0 };
+        const rootPlayer = root.game.currentPlayer();
+        if(root.untried.length===0 && root.children.length===0){
+          return {dest:null, iters:0, ms:0, p:0.5, pAvg:0.5, bestV:0, totalV:0, childStats:[]};
+        }
+        for(let it=0; it<this.iterations; it++){
+          let node = root;
+          while(node.untried.length===0 && node.children.length>0){ node = this._uctSelect(node, rootPlayer); }
+          if(node.untried.length>0){
+            const i = Math.floor(Math.random()*node.untried.length);
+            const dest = node.untried.splice(i,1)[0];
+            const next = node.game.clone();
+            next.applyMoveTo(dest);
+            const child = { game: next, parent: node, move: dest, children: [], untried: next.reachableTargets(), visits: 0, value: 0 };
+            node.children.push(child);
+            node = child;
+          }
+          const reward = this._rollout(node.game, rootPlayer);
+          while(node){ node.visits++; node.value += reward; node = node.parent; }
+        }
+        const totalV = root.children.reduce((s,ch)=>s+ch.visits,0) || 1;
+        const best = root.children.reduce((a,b)=> (a.visits>b.visits? a:b));
+        const p = best.visits>0 ? best.value/best.visits : 0.5;
+        const pAvg = root.children.length ? (root.children.reduce((s,ch)=> s + (ch.visits>0? ch.value:0), 0) / totalV) : 0.5;
+        const ms = performance.now()-t0;
+        const childStats = root.children.map(ch=>({move:ch.move, visits:ch.visits, p: ch.visits>0? ch.value/ch.visits:0.5})).sort((a,b)=>b.visits-a.visits);
+        return {dest:best.move, iters:this.iterations, ms, p, pAvg, bestV:best.visits, totalV:totalV, childStats};
+      }
+      _uctSelect(node, rootPlayer){
+        const lnN = Math.log(Math.max(1, node.visits));
+        const parentTurnIsRoot = (node.game.currentPlayer()===rootPlayer);
+        const unvisited = node.children.filter(ch=> ch.visits===0);
+        if(unvisited.length>0){ return unvisited[Math.floor(Math.random()*unvisited.length)]; }
+        let best=null, bestScore=-Infinity;
+        for(const ch of node.children){
+          const q = ch.value / ch.visits;
+          const exploit = parentTurnIsRoot ? q : (1-q);
+          const explore = this.c_ucb * Math.sqrt(lnN / ch.visits);
+          const uct = exploit + explore;
+          if(uct>bestScore){ bestScore=uct; best=ch; }
+        }
+        return best;
+      }
+      _rollout(startGame, rootPlayer){
+        const g = startGame.clone();
+        let steps=0;
+        while(!g.isTerminal() && steps<this.rolloutMax){
+          const moves=g.reachableTargets();
+          if(moves.length===0) break;
+          const dest = moves[Math.floor(Math.random()*moves.length)];
+          g.applyMoveTo(dest);
+          steps++;
+        }
+        const w = g.winner(); if(!w) return 0.5; return (w===rootPlayer? 1.0: 0.0);
+      }
+    }
+
+    // ====== UI & 互動 ======
+    const elBoard = document.getElementById('board');
+    const elLog = document.getElementById('log');
+    const elRules = document.getElementById('rules');
+    const elHint = document.getElementById('hint');
+    const openingSel = document.getElementById('opening');
+    const redTypeSel = document.getElementById('redType');
+    const blueTypeSel = document.getElementById('blueType');
+    const itersInput = document.getElementById('iters');
+    const btnStart = document.getElementById('btnStart');
+    const btnReset = document.getElementById('btnReset');
+
+    // Tabs 切換 (通用寫法)
+    document.querySelectorAll('.tabs .tab').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        // 移除所有 active
+        document.querySelectorAll('.tabs .tab').forEach(b=>b.classList.remove('active'));
+        // 隱藏所有內容
+        document.querySelectorAll('.tabwrap > div').forEach(div=>div.style.display='none');
+        // 啟用被點擊的
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.target).style.display='block';
+      });
+    });
+
+    // 標準開局（原本指定預設）
+    const STANDARD_TEXT = `1 2 3 4\n2 3 SB 1\n3 SR 1 2\n4 1 2 3`;
+    // 保存當前局的「初始棋盤」文字（供相同開局使用）
+    let initialSnapshot = null;
+    let game=null; let mcts=null; let ply=1; let waitingHuman=false; let pendingLegal=[]; let autoDelay=400;
+
+    function logLine(html){ const p=document.createElement('p'); p.innerHTML=html; elLog.appendChild(p); elLog.scrollTop=elLog.scrollHeight; }
+
+    function render(){
+      elBoard.innerHTML='';
+      const legalSet = new Set(pendingLegal.map(rc=>rc[0]+","+rc[1]));
+      for(let r=0;r<4;r++){
+        for(let c=0;c<4;c++){
+          const d=document.createElement('div'); d.className='cell';
+          let t='';
+          const cell = game.board[r][c];
+          if(cell.covered){ d.classList.add('X'); t=''; }
+          else { const tile=cell.tile; t=(tile===TILE_SR||tile===TILE_SB)? 'S' : String(tile); }
+          d.textContent = t;
+          const turnNow = game.currentPlayer();
+          if(game.redPos[0]===r && game.redPos[1]===c){ const pr=document.createElement('div'); pr.className='piece red'+(turnNow==='R'?' active':''); d.appendChild(pr); }
+          if(game.bluePos[0]===r && game.bluePos[1]===c){ const pb=document.createElement('div'); pb.className='piece blue'+(turnNow==='B'?' active':''); d.appendChild(pb); }
+          if(legalSet.has(r+","+c)) d.classList.add('legal');
+          const coord=document.createElement('div'); coord.className='coords'; coord.textContent=`${r+1},${c+1}`; if(!cell.covered) d.appendChild(coord);
+          d.addEventListener('click',()=>{ if(!waitingHuman) return; const key=r+","+c; if(!legalSet.has(key)) return; waitingHuman=false; moveTo([r,c]); });
+          elBoard.appendChild(d);
+        }
+      }
+      setBoardHintByTurn();
+    }
+
+    function computeLegal(){ pendingLegal = game.reachableTargets(); }
+
+    function findPathTo(dest){
+      const start = game.posOf(game.currentPlayer());
+      const stepsChoices = game.requiredSteps();
+      const key = (rc)=> rc[0]+','+rc[1];
+      for(const maxDepth of stepsChoices){
+        const q=[{pos:start, depth:0, path:[]}];
+        const seen=new Set([key(start)+'|0']);
+        while(q.length){
+          const cur=q.shift();
+          if(cur.depth===maxDepth){ if(cur.pos[0]===dest[0] && cur.pos[1]===dest[1]) return cur.path; continue; }
+          for(const nxt of game.neighborsOne(cur.pos)){
+            const k=key(nxt); if(cur.path.some(p=>p[0]===nxt[0]&&p[1]===nxt[1])) continue; const nkey=k+'|'+(cur.depth+1); if(seen.has(nkey)) continue; seen.add(nkey); q.push({pos:nxt, depth:cur.depth+1, path: cur.path.concat([nxt])});
+          }
+        }
+      }
+      return [dest];
+    }
+
+    function cellEl(r,c){ return elBoard.children[r*4 + c]; }
+    function centerOfCell(r,c){ const ce=cellEl(r,c); const br=ce.getBoundingClientRect(); const pr=elBoard.getBoundingClientRect(); return {x: br.left-pr.left + br.width/2, y: br.top-pr.top + br.height/2, size: br.width*0.76}; }
+    async function animateMove(dest){
+      const who = game.currentPlayer();
+      const start = game.posOf(who);
+      const path = findPathTo(dest);
+      if(!path || path.length===0){ return; }
+      const startCell = cellEl(start[0], start[1]);
+      const staticPiece = startCell.querySelector('.piece.'+(who==='R'?'red':'blue'));
+      if(staticPiece) staticPiece.style.opacity = 0.25;
+      const first = centerOfCell(start[0], start[1]);
+      const ghost = document.createElement('div');
+      ghost.className = 'anim-piece ' + (who==='R'?'red':'blue');
+      ghost.style.width = ghost.style.height = first.size+'px';
+      ghost.style.transform = `translate(${first.x - first.size/2}px, ${first.y - first.size/2}px)`;
+      elBoard.appendChild(ghost);
+      const stepMs = 250;
+      for(const [r,c] of path){
+        await new Promise(res=>{ requestAnimationFrame(()=>{ ghost.style.transition='transform '+stepMs+'ms ease'; const t=centerOfCell(r,c); ghost.style.transform = `translate(${t.x - t.size/2}px, ${t.y - t.size/2}px)`; setTimeout(res, stepMs); }); });
+      }
+      ghost.remove(); if(staticPiece) staticPiece.style.opacity = '';
+    }
+
+    async function moveTo(dest){
+      try{ await animateMove(dest); game.applyMoveTo(dest); }catch(e){ logLine(`<span class='pill bad'>${e.message}</span>`); return; }
+      ply++;
+      computeLegal(); render();
+      if(game.isTerminal()){
+        render(); setBoardHintByTurn();
+        const loser = game.currentPlayer(); const winner = (loser==='R'?'B':'R');
+        const loserPlayer = loser==='R' ? '紅色玩家' : '藍色玩家';
+        const winnerPlayer = winner==='R' ? '紅色玩家' : '藍色玩家';
+        logLine(`${loserPlayer}無法移動，${winnerPlayer}勝利`);
+        return;
+      }
+      await maybeAuto();
+    }
+
+    function playerLabel(p){ return p==='R' ? '紅色玩家' : '藍色玩家'; }
+    function logTurnHeader(){ const who = game.currentPlayer(); const whoLbl = playerLabel(who); const cls = (who==='R'?'t-red':'t-blue'); logLine(`第<b>${ply}</b>步 · 現在是 <b class="${cls}">${whoLbl}</b> 的回合`); }
+    function setBoardHintByTurn(){
+      if(!elHint) return;
+      if(game.isTerminal()){
+        const loser=game.currentPlayer(); const winner=(loser==='R'?'B':'R');
+        const loserPlayer = loser==='R'?'紅色玩家':'藍色玩家';
+        const winnerPlayer = winner==='R'?'紅色玩家':'藍色玩家';
+        elHint.textContent = `${loserPlayer}無法移動，${winnerPlayer}勝利`;
+        return;
+      }
+      const who=game.currentPlayer();
+      const whoPlayer = who==='R'?'紅色玩家':'藍色玩家';
+      const role = (who==='R'? redTypeSel.value : blueTypeSel.value);
+      if(role==='human') elHint.textContent = `${whoPlayer}請點擊任一高亮格落子`;
+      else if(role==='ai') elHint.textContent = `${whoPlayer}由AI思考決定中...`;
+      else elHint.textContent = `${whoPlayer}由隨機決定中...`;
+    }
+
+    async function maybeAuto(){
+      const actor = (game.currentPlayer()==='R'? redTypeSel.value : blueTypeSel.value);
+      logTurnHeader();
+      setBoardHintByTurn();
+      if(actor==='human'){ computeLegal(); waitingHuman=true; render(); return; }
+      computeLegal(); render();
+      if(actor==='random'){
+        await sleep(autoDelay);
+        const legal = game.reachableTargets();
+        const dest = legal[Math.floor(Math.random()*legal.length)];
+        logLine(`隨機選擇 <b>(${dest[0]+1}, ${dest[1]+1})</b>`);
+        await moveTo(dest);
+      } else if(actor==='ai'){
+        if(!mcts) mcts = new MCTS({iterations: Number(itersInput.value)||1500, rolloutMax: 60});
+        else mcts.iterations = Number(itersInput.value)||1500;
+        logLine(`AI正在思考中...`);
+        await sleep(0);
+        const tStart = performance.now();
+        const res = mcts.chooseWithStats(game);
+        const elapsed = performance.now() - tStart;
+        if (elapsed < autoDelay) { await sleep(autoDelay - elapsed); }
+        if(!res.dest){ logLine(`AI 無步可走`); return; }
+        logLine(`AI選擇 <b>(${res.dest[0]+1}, ${res.dest[1]+1})</b> ｜ 勝率 <b>${(res.p*100).toFixed(1)}%</b>`);
+        await moveTo(res.dest);
+      }
+    }
+
+    function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+
+    function boardToText(g){
+      const out=[];
+      for(let r=0;r<4;r++){
+        const row=[];
+        for(let c=0;c<4;c++){
+          const cell=g.board[r][c];
+          if(cell.covered){ row.push('X'); }
+          else if(cell.tile===TILE_SR){ row.push('SR'); }
+          else if(cell.tile===TILE_SB){ row.push('SB'); }
+          else { row.push(String(cell.tile)); }
+        }
+        out.push(row.join(' '));
+      }
+      return out.join('\n');
+    }
+
+    function startGame(){ try{
+        const opening = openingSel.value; elLog.innerHTML=''; ply=1; waitingHuman=false; pendingLegal=[]; mcts=null; autoDelay=400;
+        if(opening==='random'){
+          game = GameJS.fromRandom();
+        } else if(opening==='standard'){
+          game = GameJS.fromFixed(STANDARD_TEXT, 'R');
+        } else if(opening==='same'){
+          if(initialSnapshot){ game = GameJS.fromFixed(initialSnapshot, 'R'); }
+          else { game = GameJS.fromFixed(STANDARD_TEXT, 'R'); logLine(`<span class="pill">首次使用「相同」時無快照，已改用標準開局</span>`); }
+        }
+        game.turn='R';
+        initialSnapshot = boardToText(game);
+        computeLegal(); render();
+        maybeAuto();
+      }catch(err){ alert('初始化失敗：'+err.message); }
+    }
+
+    btnStart.addEventListener('click', startGame);
+    btnReset.addEventListener('click', ()=>{ elLog.innerHTML=''; });
+
+    // ===== Self-test (console) =====
+    (function(){
+      try{
+        const g = GameJS.fromFixed(`1 2 3 4\n2 3 SB 1\n3 SR 1 2\n4 1 2 3`,'R');
+        console.assert(g.currentPlayer()==='R','turn should be R');
+        console.assert(g.requiredSteps().length===4,'SR gives 1~4');
+        const targets=g.reachableTargets();
+        console.assert(Array.isArray(targets) && targets.length>0,'has targets');
+        const before=g.posOf('R');
+        g.applyMoveTo(targets[0]);
+        console.assert(g.cell(before[0],before[1]).covered===true,'leaving cell covered');
+        console.assert(g.currentPlayer()==='B','turn switches to B');
+
+        const g0 = GameJS.fromFixed(`1 2 3 4\n2 3 SB 1\n3 SR 1 2\n4 1 2 3`,'R');
+        console.assert(boardToText(g0).trim()==='1 2 3 4\n2 3 SB 1\n3 SR 1 2\n4 1 2 3','boardToText standard snapshot');
+
+        const gr = GameJS.fromRandom(); let cntSR=0,cntSB=0; for(let r=0;r<4;r++){ for(let c=0;c<4;c++){ const t=gr.board[r][c].tile; if(t===TILE_SR) cntSR++; if(t===TILE_SB) cntSB++; }}
+        console.assert(cntSR===1 && cntSB===1,'random has exactly one SR and SB');
+
+        const g2 = GameJS.fromFixed(`1 2 3 4\n2 3 SB 1\n3 SR 1 2\n4 1 2 3`,'R');
+        let threw=false; try{ g2.applyMoveTo(g2.posOf('R')); }catch(e){ threw=true; }
+        console.assert(threw,'applyMoveTo should throw on staying');
+
+        const g3 = GameJS.fromFixed(`1 2 3 4\n2 3 SB 1\n3 SR 1 2\n4 1 2 3`,'R'); const t3=g3.reachableTargets()[0]; g3.applyMoveTo(t3); const snap3=boardToText(g3); console.assert(/\bX\b/.test(snap3),'snapshot after move contains X');
+
+        console.log('[Self-test] OK');
+      }catch(e){ console.error('[Self-test] FAIL', e); }
+    })();
+
+    // 首次載入就準備一局
+    startGame();
+  </script>
+<script>
+// === 等高同步（僅影響高度，不改任何現有行為/樣式） ===
+(function(){
+  const app = document.querySelector('.app');
+  const left = document.querySelector('.card.left');
+  if(!app || !left) return;
+  const apply = ()=>{
+    // 手機一欄時不強制等高
+    if (window.matchMedia('(max-width: 900px)').matches){
+      app.style.removeProperty('--leftH');
+      return;
+    }
+    const h = Math.round(left.getBoundingClientRect().height);
+    app.style.setProperty('--leftH', h + 'px');
+  };
+  const ro = new ResizeObserver(apply);
+  ro.observe(left);
+  window.addEventListener('resize', apply, {passive:true});
+  window.addEventListener('load', apply);
+  apply();
+})();
+</script>
+</body>
+</html>
