@@ -46,10 +46,17 @@
       background: #0a0f25; border:1px dashed #233067; border-radius:12px; position:relative; min-height:180px;
       display:grid; place-items:center; overflow:hidden;
     }
-    
+    .thumb {
+      cursor: pointer;
+      transition: box-shadow .18s, filter .18s;
+    }
+    .thumb:hover img, .thumb:focus img {
+      filter: saturate(1.15) contrast(1.12) brightness(1.08);
+      box-shadow: 0 0 0 3px #6ee7ff88, 0 8px 28px #6ee7ff22;
+    }
 
     .desc{font-size:14px; color:#cfdbff; line-height:1.6}
-    .meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px}
+    .meta{display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; color:var(--muted); font-size:13px; opacity:0.92;}
     .pill{background:#0b1333; border:1px solid #24305f; padding:5px 10px; border-radius:999px; font-size:12px; color:#dbe6ff}
 
     .actions{padding:16px 18px; border-top:1px solid #24305f; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;}
@@ -68,7 +75,7 @@
     <header>
       <div>
         <h1>抽象棋 · 遊戲首頁</h1>
-        <div class="sub">選擇一款遊戲開始 · 設計／開發：奧羅</div>
+        <div class="sub">選擇一款遊戲開始 · 程式開發練習：奧羅</div>
       </div>
     </header>
 
@@ -79,19 +86,22 @@
           <h2>四色棋 Four Color Chess <span class="tag">原創遊戲</span></h2>
         </header>
         <div class="body">
-          <div class="preview" aria-hidden="true">
+          <a class="preview" href="FCG.html" aria-label="進入四色棋">
             <img src="thumb-fcg.png" alt="四色棋縮圖" class="thumb-img" style="max-width:90%;max-height:170px;object-fit:contain;">
-          </div>
+          </a>
           <div>
-            <p class="desc">玩家將操控4色棋子在棋盤上穿梭，停留的格子顏色即決定對手可移動的棋子，想辦法封鎖對手，讓他無法合法移動，則取得勝利。</p>
+            <p class="desc">玩家將操控4色棋子在棋盤上穿梭，停留的格子顏色即決定對手可移動的棋子；想辦法封鎖對手，讓對手無路可走者取得勝利。</p>
             <div class="meta">
               <span class="pill">雙人抽象棋</span>
               <span class="pill">MCTS AI</span>
-              <span class="pill">奧羅桌遊設計工作室原創</span>
+              <span class="pill">奧羅桌遊設計工作室</span>
             </div>
           </div>
         </div>
-        <div class="actions">
+        <div class="row" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;padding:0 18px 18px 18px;">
+          <div class="meta" style="white-space:nowrap">
+            <span>2 人對戰</span><span>3–8 分鐘</span><span>設計者:奧羅</span>
+          </div>
           <a class="btn primary" href="FCG.html">開始遊玩</a>
         </div>
       </article>
@@ -102,27 +112,29 @@
           <h2>四步棋 Four Moves Chess <span class="tag">非原創</span></h2>
         </header>
         <div class="body">
-          <div class="preview" aria-hidden="true">
+          <a class="preview" href="FMG.html" aria-label="進入四步棋">
             <img src="thumb-fmg.png" alt="四步棋縮圖" class="thumb-img" style="max-width:90%;max-height:170px;object-fit:contain;">
-          </div>
+          </a>
           <div>
             <p class="desc">玩家依照所在位置數字操控棋子移動 1～4 步，必須跳躍所有棋子與障礙，在越來越少的場地格子中，率先讓對手無路可走者獲勝。</p>
             <div class="meta">
               <span class="pill">雙人抽象棋</span>
               <span class="pill">MCTS AI</span>
               <span class="pill">UNO跳步棋</span>
-              <span class="pill">設計者未知</span>
             </div>
           </div>
         </div>
-        <div class="actions">
+        <div class="row" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;padding:0 18px 18px 18px;">
+          <div class="meta" style="white-space:nowrap">
+            <span>2 人對戰</span><span>3–8 分鐘</span><span>設計者:未知</span>
+          </div>
           <a class="btn primary" href="FMG.html">開始遊玩</a>
         </div>
       </article>
     </section>
 
     <footer>
-      © 奧羅桌遊設計工作室 · 練習作品 · 建議使用最新 Chrome／Safari · 若圖像未顯示請嘗試重新整理
+      © 奧羅桌遊設計工作室 · 練習作品 · 建議使用最新 Chrome／Safari · 若圖像未顯示請嘗試重新整理。自製美術與規則說明僅供非商業分享。原創桌遊版權屬於各自作者。
     </footer>
   </div>
 </body>
