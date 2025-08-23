@@ -192,12 +192,12 @@
         </div>
         <div class="rules" id="about" style="display:none">
           <h3 style="margin:0 0 8px">遊戲介紹</h3>
-          <p>四色棋是由我自己設計的抽象棋類遊戲，曾為了加入主題改名為巫師元素棋；也因為此遊戲可以自己跟自己對弈，因此我又稱之為邊緣棋。四色棋是我設計的第一個棋類遊戲，雖然難以商業化，但是我個人非常喜歡這樣簡單乾淨的規則，同時此遊戲也是引導我開始製作機器學習與網頁設計的契機。</p>
+          <p>四色棋是由我自己(奧羅)設計的抽象棋類遊戲，也因為此遊戲可以自己跟自己對弈，因此我又稱之為邊緣棋。四色棋是我設計的第一個雙人棋類遊戲，雖然難以商業化，但是我個人非常喜歡這樣簡單乾淨的規則，同時此遊戲也是引導我開始製作機器學習與網頁設計的契機。</p>
           <p>關於此遊戲更多介紹：<a href="https://www.instagram.com/p/B5bsCvqla9f/?igsh=dGlyZndjbzR6ZGR3" target="_blank" rel="noopener">四色棋IG介紹貼文</a></p>
         </div>
       </div>
 
-      <div class="footer">奧羅桌遊設計工作室 · 練習作品</div>
+      <div class="footer">奧羅桌遊設計工作室 · 程式練習作品</div>
     </div>
   </div>
 
@@ -442,9 +442,9 @@ function setHint(){
       const fc = G.focus ? colorZh(G.focus.color) : '（未放焦點）';
       const role = (G.turn==='B'? blackTypeSel.value : whiteTypeSel.value);
       if(!G.focus && G.turn==='B'){ elHint.textContent = `黑方請先放焦點`; }
-      else if(role==='human'){ elHint.textContent = `${who}行動中（焦點：${fc}棋），請點擊高亮格移動`; }
-      else if(role==='ai'){ elHint.textContent = `${who}（AI）思考中…`; }
-      else { elHint.textContent = `${who}（隨機）決定中…`; }
+      else if(role==='human'){ elHint.textContent = `${who}行動中，必須移動${fc}棋，請點擊高亮格移動`; }
+      else if(role==='ai'){ elHint.textContent = `${who} AI 思考中…`; }
+      else { elHint.textContent = `${who} 隨機 決定中…`; }
     }
 
     function pieceNode(occ){
@@ -541,7 +541,7 @@ async function doMove(dest, byAI = false, aiInfo = null){
   stepCount++;
   if (byAI) {
     if (aiInfo && typeof aiInfo.winrate === 'number') {
-      logLine(`AI（${playerLabel(G.turn === 'B' ? 'W' : 'B')}）選擇 (${dest[0]+1}, ${dest[1]+1}) ${colorZh(G.cellColor(dest[0],dest[1]))}格 | ${playerLabel(G.turn === 'B' ? 'W' : 'B')}勝率${(aiInfo.winrate*100).toFixed(1)}%`);
+      logLine(`AI ${playerLabel(G.turn === 'B' ? 'W' : 'B')}選擇 (${dest[0]+1}, ${dest[1]+1}) ${colorZh(G.cellColor(dest[0],dest[1]))}格 | ${playerLabel(G.turn === 'B' ? 'W' : 'B')}勝率${(aiInfo.winrate*100).toFixed(1)}%`);
     } else {
       logLine(`AI選擇 (${dest[0]+1}, ${dest[1]+1}) ${colorZh(G.cellColor(dest[0],dest[1]))}格`);
     }

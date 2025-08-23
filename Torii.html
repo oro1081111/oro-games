@@ -1,0 +1,1012 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Torii 跳躍森靈</title>
+  <style>
+    :root{
+      --bg: #0b1020;
+      --panel: #121a33;
+      --panel-2:#0f1530;
+      --text: #e9eefb;
+      --muted:#9fb0d6;
+      --accent:#6ee7ff;
+      --accent-2:#7c5cff;
+      --good:#00d18f;
+      --bad:#ff5c7c;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --radius: 16px;
+
+      /* 棋盤草綠 */
+      --grass: #3b8d47;
+      --grass-h: #247331;
+      --grass-border:#2b7a38;
+
+      /* 既有配色（信徒/鳥居維持不變） */
+      --red:#f87171;
+      --blue:#60a5fa;
+
+      /* 精靈更深色 */
+      --red-deep:#dc2626;
+      --blue-deep:#2563eb;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, "Noto Sans TC", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      background: radial-gradient(1200px 800px at 20% -10%, #1b2352 0%, #0b1020 45%, #070a15 100%);
+      color:var(--text);
+      letter-spacing:.2px;
+    }
+    .app{max-width:1100px;margin:32px auto;padding:0 16px;display:grid;grid-template-columns: 1fr 1fr;gap:20px;align-items:stretch}
+    .card{background:linear-gradient(180deg, var(--panel) 0%, var(--panel-2) 100%); border:1px solid #1f2a52;border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden; display:flex; flex-direction:column; height:100%;}
+    .header{padding:18px 22px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #24305f}
+    .header h1{font-size:20px;margin:0; font-weight:700; letter-spacing:.4px}
+    .header .sub{opacity:.8;font-size:12px}
+
+    .board-wrap{padding:20px}
+    .board{display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; position:relative}
+    .cell{
+      position:relative; aspect-ratio:1 / 1; border-radius:12px;
+      background:var(--grass); border:1px solid var(--grass-border);
+      display:flex; align-items:center; justify-content:center;
+      transition:transform .08s ease, background .15s ease, border-color .2s ease;
+    }
+    .cell:hover{ background:var(--grass-h) }
+    .cell.legal{ outline: 3px solid #dff6ff; outline-offset: -3px; cursor:pointer; box-shadow: 0 0 0 2px rgba(125,211,252,.2) inset }
+    .coords{position:absolute; bottom:6px; right:8px; font-size:10px; color:#d9f7e0; opacity:.6}
+
+    /* === 物件層級：信徒(1) < 鳥居(2) < 精靈(3) === */
+    .token{position:absolute; border-radius:50%;}
+    .follower{ inset:20%; z-index:1; }
+    .follower.R{ background: var(--red); box-shadow: 0 6px 14px rgba(0,0,0,.35) }
+    .follower.B{ background: var(--blue); box-shadow: 0 6px 14px rgba(0,0,0,.35) }
+
+    .torii{ position:absolute; inset:8%; border-radius:50%; background:transparent; pointer-events:none; box-shadow: inset 0 0 0 4px currentColor; z-index:2; }
+    .torii.R{ color: var(--red); }
+    .torii.B{ color: var(--blue); }
+
+    .spirit{ position:absolute; width:0; height:0; transform: translateY(6%); z-index:3; }
+    .spirit.R{ border-left: 18px solid transparent; border-right: 18px solid transparent; border-bottom: 32px solid var(--red-deep); }
+    .spirit.B{ border-left: 18px solid transparent; border-right: 18px solid transparent; border-bottom: 32px solid var(--blue-deep); }
+
+    .panel{padding:16px 18px}
+    .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
+    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
+    .row.nowrap{flex-wrap:nowrap}
+    label{font-size:12px; color:var(--muted)}
+    select,input,textarea,button{background:#0e1430; color:#e9eefb; border:1px solid #273163; border-radius:10px; padding:8px 10px; font-size:14px}
+    input[type="number"]{width:120px}
+    button{cursor:pointer; border:1px solid #394685; background:linear-gradient(180deg,#1a244e,#121a33); padding:10px 14px; font-weight:700}
+    button.primary{background:linear-gradient(180deg, #2a76ff, #2356ce); border-color:#2d5fd1}
+    button.ghost{background:transparent}
+
+    .tabs{padding:10px 18px; display:flex; gap:10px; border-top:1px solid #24305f; background:#0a0f25}
+    .tab{padding:8px 14px; border-radius:999px; border:1px solid #2b396e; background:#0b1333; color:#dbe6ff; cursor:pointer}
+    .tab.active{background:#1b2a5a; border-color:#3a57a5}
+    .tabwrap{flex:1 1 auto; display:flex; min-height:0}
+    .log{padding:14px 18px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background:#0a0f25; border-top:1px solid #24305f; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius); flex:1 1 auto; min-height:0; height:auto}
+    .log p{margin:6px 0}
+    .rules{padding:16px 18px; overflow:auto; background:#0a0f25; border-top:1px solid #24305f; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius); font-family: inherit; line-height:1.6; flex:1 1 auto; min-height:0; height:auto}
+    .hint{font-size:12px; color:var(--muted); padding:0 18px 16px}
+    .sep{height:1px;background:#24305f;margin:14px 0}
+    .footer{padding:12px 18px; font-size:12px; color:#99a4c7; margin-top:auto}
+
+    /* 供應區與行動板塊（左側） */
+    .leftExtras{ padding: 0 20px 18px; display:grid; gap:12px; }
+    .supply{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .supply .box{ background:#0a0f25; border:1px solid #24305f; border-radius:12px; padding:10px; }
+    .supply h4{ margin:0 0 6px; font-size:13px; color:#cfe7ff }
+    .supply .row{ justify-content:space-between }
+    .count{ font-size:13px; color:#9fb0d6 }
+    .mini{ display:flex; gap:6px; align-items:center }
+    .dot{ width:12px; height:12px; border-radius:50% }
+    .dot.R{ background:var(--red) } .dot.B{ background:var(--blue) }
+    .ring{ width:12px; height:12px; border-radius:50%; box-shadow: inset 0 0 0 2px currentColor; }
+    .ring.R{ color:var(--red) } .ring.B{ color:var(--blue) }
+
+    .tiles{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
+    .tilebox{ background:#0a0f25; border:1px solid #24305f; border-radius:12px; padding:10px; transition:box-shadow .18s;}
+    .tilebox.active-tiles {
+      box-shadow: 0 0 0 3px #6ee7ff, 0 0 16px 4px #6ee7ff44;
+      border-color: #6ee7ff;
+      z-index: 10;
+    }
+    .tilebox h4{ margin:0 0 6px; font-size:13px; color:#cfe7ff }
+    .tileRow{ display:flex; gap:8px; flex-wrap:wrap }
+    .tile{
+      min-width:44px; padding:8px 10px; border-radius:10px; border:1px solid #394685;
+      background:linear-gradient(180deg,#1a244e,#121a33);
+      font-weight:800; text-align:center; cursor:pointer; user-select:none;
+      transition: transform .12s ease, background .15s, border-color .15s;
+    }
+    .tile.selected {
+      background: #6ee7ff;
+      color: #1e2e1e;
+      border-color: #7c5cff;
+      box-shadow: 0 0 0 3px #6ee7ff88;
+      font-weight: 900;
+      z-index: 10;
+    }
+    .tile:hover{ transform: translateY(-1px) }
+    .tile.used{ opacity:.35; cursor:not-allowed } /* 只對「已使用」變暗 */
+    .tile.R{ color:var(--red) } .tile.B{ color:var(--blue) }
+
+    /* 響應式 */
+    .app{display:grid; grid-template-columns: 1.2fr 450px; gap:16px; max-width:1200px; margin:0 auto; padding: max(12px, env(safe-area-inset-top)) 12px 12px 12px;}
+    @media (max-width: 900px){ .app{ grid-template-columns:1fr; } .right{ order:2; } .left{ order:1; } .panel{ width:100%; } }
+    .board{ max-width: min(92vw, 560px); margin:0 auto; position:relative; }
+    @media (max-width: 420px){ .board{ gap:8px; } .cell .coords{ display:none; } }
+    .right .card{ max-width:680px; margin:0 auto; }
+    #log{ max-height:none; overflow:auto; }
+    .board{ touch-action: manipulation; }
+    .card.right{ height: var(--leftH, auto); }
+    @media (max-width: 900px){ .card.right{ height:auto; } }
+
+    /* === 顯示層動畫 === */
+    .spirit-ghost{
+      position:absolute;
+      z-index:99;
+      width:0; height:0;
+      border-left: 18px solid transparent;
+      border-right: 18px solid transparent;
+      transform: translate(-50%,-60%);
+      will-change: transform;
+      transition: transform 500ms cubic-bezier(.2,.8,.2,1);
+      pointer-events:none;
+    }
+    .spirit-ghost.R{ border-bottom: 32px solid var(--red-deep); }
+    .spirit-ghost.B{ border-bottom: 32px solid var(--blue-deep); }
+  </style>
+  <style>
+    a { color: #6ee7ff; text-decoration: underline; }
+    a:hover { color: #fff; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <div class="card left">
+      <div class="header">
+        <h1>Torii 跳躍森靈</h1>
+        <div class="sub">設計者：陳致寬 · 出版社：桌遊愛樂事</div>
+      </div>
+      <div class="leftExtras">
+        <!-- 供應區 -->
+        <div class="supply">
+          <div class="box">
+            <h4>紅方供應</h4>
+            <div class="row"><span class="mini"><span class="dot R"></span> 信徒</span><span id="supR" class="count">9/9</span></div>
+            <div class="row"><span class="mini"><span class="ring R"></span> 鳥居</span><span id="torR" class="count">0/4</span></div>
+          </div>
+          <div class="box">
+            <h4>藍方供應</h4>
+            <div class="row"><span class="mini"><span class="dot B"></span> 信徒</span><span id="supB" class="count">9/9</span></div>
+            <div class="row"><span class="mini"><span class="ring B"></span> 鳥居</span><span id="torB" class="count">0/4</span></div>
+          </div>
+        </div>
+        <!-- 勝率條 -->
+        <div class="winrate-bar" style="margin:10px 0 0px 0;">
+          <div class="bar" style="display:flex;height:18px;border-radius:8px;overflow:hidden;background:#1a2a1a;border:1px solid #273163;">
+            <div id="barRed" style="background:#f87171;height:100%;transition:width .3s"></div>
+            <div id="barBlue" style="background:#60a5fa;height:100%;transition:width .3s"></div>
+          </div>
+          <div class="labels" style="display:flex;justify-content:space-between;font-size:13px;margin-top:2px;">
+            <span id="redRate" style="color:#f87171">紅方勝率50%</span>
+            <span id="blueRate" style="color:#60a5fa">藍方勝率50%</span>
+          </div>
+        </div>
+        <!-- 棋盤 -->
+        <div class="board-wrap">
+          <div id="board" class="board"></div>
+        </div>
+        <!-- 行動板塊 -->
+        <div class="tiles">
+          <div class="tilebox">
+            <h4>紅方行動板塊</h4>
+            <div class="tileRow" id="tilesR"></div>
+          </div>
+          <div class="tilebox">
+            <h4>藍方行動板塊</h4>
+            <div class="tileRow" id="tilesB"></div>
+          </div>
+        </div>
+      </div>
+      <div class="hint" id="hint">紅方先手：請從未使用的板塊中選擇點數，並依點數移動步數。</div>
+    </div>
+
+    <div class="card right">
+      <div class="header">
+        <h1>對局設定</h1>
+        <div class="sub">玩家/隨機/AI · 棋盤固定 4×4 草綠格</div>
+      </div>
+      <div class="panel">
+        <div class="grid2">
+          <div class="row">
+            <label>紅方（先手）</label>
+            <select id="redType">
+              <option value="human" selected>玩家</option>
+              <option value="random">隨機</option>
+              <option value="ai">AI</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>藍方（後手）</label>
+            <select id="blueType">
+              <option value="human">玩家</option>
+              <option value="random">隨機</option>
+              <option value="ai" selected>AI</option>
+            </select>
+          </div>
+          <div class="row nowrap">
+            <label for="iters">AI 迭代數</label>
+            <input id="iters" type="number" min="200" step="200" value="2000" />
+          </div>
+        </div>
+        <div class="sep"></div>
+        <div class="row" style="gap:10px; justify-content:space-between">
+          <button class="primary" id="btnStart">開始新對局</button>
+          <button class="ghost" onclick="window.location='index.html'">返回主頁</button>
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tabs">
+        <button id="tabLog"   class="tab active" data-target="log">行動日誌</button>
+        <button id="tabRules" class="tab"        data-target="rules">規則說明</button>
+        <button id="tabAbout" class="tab"        data-target="about">遊戲介紹</button>
+      </div>
+      <div class="tabwrap">
+        <div class="log" id="log"></div>
+
+        <div class="rules" id="rules" style="display:none">
+          <h3 style="margin:0 0 8px">遊戲規則</h3>
+          <ol style="margin:0 0 8px 18px; padding:0">
+            <li>棋盤為 4×4；每位玩家：森靈×1（三角）、信徒×9（實心圓）、鳥居×4（空心圓）、行動板塊 1/2/3。</li>
+            <li>起始：紅森靈放置在 (2,2)，藍森靈放置在 (3,3)。紅方先手，紅色「2」板塊翻至已使用面。</li>
+            <li>每回合包含四步驟：
+              <ul>
+                <li><b>1. 選行動板塊：</b>從尚未使用的行動板塊中選擇 1 張，翻至已使用面；數字表示必須移動的步數。</li>
+                <li><b>2. 移動森靈：</b>森靈只能上下左右移動，不能斜走；若遇到對手所在的行或列，必須整條「跳過」；同一回合不可重訪格子或回到起點。</li>
+                <li><b>3. 放置信徒：</b>在本回合停留過的格子（不含起點與被跳過格）放置或替換自己的信徒；鳥居所在格不放置。</li>
+                <li><b>4. 建造鳥居：</b>若形成橫列或直列 4 格信徒，立即選擇其中 1 格建立鳥居；該線其他未受保護的信徒放置回供應區。</li>
+              </ul>
+            </li>
+            <li>勝利條件：
+              <ul>
+                <li>若場上同時有 9 枚己方信徒，立即獲勝。</li>
+                <li>若已建成 4 座己方鳥居，立即獲勝。</li>
+              </ul>
+            </li>
+            <li>若三張行動板塊都已使用，該玩家回合結束後重置為可用。</li>
+            <li>特例：若同時形成多條直線可依序選擇建造順序。</li>
+            <li>備註：此版本為沒有森靈能力的基礎版本。</li>
+          </ol>
+        </div>
+
+        <div class="rules" id="about" style="display:none">
+          <h3 style="margin:0 0 8px">遊戲介紹</h3>
+          <p>
+            Torii 跳躍森靈 是一款雙人棋遊戲。玩家操縱神靈在棋盤上跳躍嬉戲，Torii（日文鳥居）象徵神域門戶，也是森靈的遊樂場！  
+            兩個神靈永不在同一條直線，因此必須穿梭跳躍、散播信徒並建造鳥居。當你率先蓋好 4 座鳥居，或在棋盤上散播滿 9 枚信徒時，即刻獲勝！
+          </p>
+
+          <h3 style="margin:12px 0 6px">遊戲設計</h3>
+          <p>
+            <strong>kolordeep 深顏色工作室 - 陳致寬 Kuan Chen</strong><br>
+            熱愛抽象棋的臺灣原創桌遊設計團隊，設計作品包括《攻鎖棋》、《疫途》、《跳躍森靈》、《Dragonarium》等，持續努力中！<br>
+            臉書粉專：<a href="https://www.facebook.com/kolordeepboardgamestudio/" target="_blank">kolordeep boardgame studio</a>
+          </p>
+
+          <h3 style="margin:12px 0 6px">遊戲出版</h3>
+          <p>
+            <strong>桌遊愛樂事 EmperorS4</strong><br>
+            成立於 2013 年，是台灣最具代表性的原創桌遊出版品牌之一。致力於創作具有文化深度與國際吸引力的桌遊產品，讓每一位玩家都能在其中獲得樂趣、連結與啟發。代表作品如《花見小路》《彩色島》《馭利交易者》《跳躍森靈》。<br>
+            臉書粉專：<a href="https://www.facebook.com/EmperorS4" target="_blank">EmperorS4 Facebook</a><br>
+            官方網頁：<a href="https://tw.emperors4.com/" target="_blank">https://tw.emperors4.com/</a>
+          </p>
+          </div>
+      </div>
+
+      <div class="footer">奧羅桌遊設計工作室 · 程式練習作品</div>
+    </div>
+  </div>
+
+  <script>
+    // 工具
+    function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
+    function centerOfCell(r, c) {
+      const ce = cellEl(r,c);
+      const br = ce.getBoundingClientRect();
+      const pr = elBoard.getBoundingClientRect();
+      return { x: br.left-pr.left + br.width/2, y: br.top-pr.top + br.height/2, size: br.width };
+    }
+    function makeSpiritGhost(ownerClass) {
+      const g = document.createElement('div');
+      g.className = `spirit-ghost ${ownerClass}`;
+      return g;
+    }
+
+    /* ========= 狀態與規則（不變） ========= */
+    class ToriiGame {
+      constructor(){
+        this.rows=4; this.cols=4;
+        this.spirit = { R:{r:1,c:1}, B:{r:2,c:2} };
+        this.followers = Array.from({length:4},()=>Array(4).fill(null));
+        this.torii = Array.from({length:4},()=>Array(4).fill(null));
+        this.turn='R';
+        this.tilesUsed = { R:{1:false,2:true,3:false}, B:{1:false,2:false,3:false} };
+        this.pendingTile = null;
+        this.pendingPath = [];
+        this.stepRemain = 0;
+        this.building = false;
+        this.buildChoices = [];
+        this.ended=false; this._winner=null;
+      }
+      opp(s){ return s==='R'?'B':'R'; }
+      inBounds(r,c){ return r>=0 && r<4 && c>=0 && c<4; }
+      countFollowers(side){ let n=0; for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(this.followers[r][c]===side) n++; return n; }
+      countTorii(side){ let n=0; for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(this.torii[r][c]===side) n++; return n; }
+      availableTiles(side){ const u=this.tilesUsed[side]; return [1,2,3].filter(k=>!u[k]); }
+      startWithTile(k){ this.pendingTile=k; this.stepRemain=k; this.pendingPath=[]; }
+      currentPos(){ return this.spirit[this.turn]; }
+      visitedSet(start){ const s=new Set(); s.add(start.r+','+start.c); for(const p of this.pendingPath) s.add(p.r+','+p.c); return s; }
+      nextSteps(fromR, fromC){
+        const oppPos = this.spirit[this.opp(this.turn)];
+        const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+        const out=[];
+        const start = this.spirit[this.turn];
+        const visited = this.visitedSet(start);
+        for(const [dr,dc] of dirs){
+          let r=fromR+dr, c=fromC+dc;
+          if(!this.inBounds(r,c)) continue;
+          if(r===oppPos.r || c===oppPos.c){ r+=dr; c+=dc; if(!this.inBounds(r,c)) continue; }
+          const key = r+','+c;
+          if(key===start.r+','+start.c) continue;
+          if(visited.has(key)) continue;
+          out.push({r,c});
+        }
+        return out;
+      }
+      enumeratePaths(k){
+        const start = this.spirit[this.turn];
+        const paths=[];
+        const dfs=(r,c,steps,leftPath,visited)=>{
+          if(steps===0){ paths.push(leftPath.slice()); return; }
+          const moves=this.nextSteps(r,c);
+          for(const m of moves){
+            const key=m.r+','+m.c;
+            if(visited.has(key)) continue;
+            visited.add(key);
+            leftPath.push({r:m.r,c:m.c});
+            dfs(m.r,m.c,steps-1,leftPath,visited);
+            leftPath.pop(); visited.delete(key);
+          }
+        };
+        const v=new Set([start.r+','+start.c]);
+        dfs(start.r,start.c,k,[],v);
+        return paths;
+      }
+      isTerminal(){ return this.ended; }
+      winner(){ return this._winner; }
+      fullLines(side){
+        const lines=[];
+        for(let r=0;r<4;r++){
+          let ok=true; for(let c=0;c<4;c++) if(this.followers[r][c]!==side) {ok=false; break;}
+          if(ok) lines.push({type:'row', r, cells:[{r,c:0},{r,c:1},{r,c:2},{r,c:3}]});
+        }
+        for(let c=0;c<4;c++){
+          let ok=true; for(let r=0;r<4;r++) if(this.followers[r][c]!==side) {ok=false; break;}
+          if(ok) lines.push({type:'col', c, cells:[{r:0,c},{r:1,c},{r:2,c},{r:3,c}]});
+        }
+        return lines;
+      }
+      applyPath(path){
+        const side=this.turn, opp=this.opp(side);
+        const last = path[path.length-1];
+        this.spirit[side] = {r:last.r, c:last.c};
+        const seen=new Set(); const uniq=[];
+        for(const p of path){ const k=p.r+','+p.c; if(seen.has(k)) continue; seen.add(k); uniq.push(p); }
+        for(const p of uniq){
+          if(this.torii[p.r][p.c]) continue;
+          const cur=this.followers[p.r][p.c];
+          if(cur===null){ this.followers[p.r][p.c]=side; }
+          else if(cur===opp){ this.followers[p.r][p.c]=side; }
+        }
+        if(this.countFollowers(side) >= 9){ this.ended=true; this._winner=side; return {needBuild:false}; }
+        const lines=this.fullLines(side);
+        if(lines.length>0){
+          this.building = true;
+          const cand=[];
+          for(const ln of lines){
+            for(const p of ln.cells){
+              if(!this.torii[p.r][p.c] && this.followers[p.r][p.c]===side){
+                cand.push(p);
+              }
+            }
+          }
+          const map=new Map();
+          for(const p of cand){ map.set(p.r+','+p.c, p); }
+          this.buildChoices = Array.from(map.values());
+          return {needBuild:true};
+        }
+        this.endTurnFlipAndPass(side);
+        return {needBuild:false};
+      }
+      endTurnFlipAndPass(side){
+        this.tilesUsed[side][this.pendingTile] = true;
+        if(this.tilesUsed[side][1] && this.tilesUsed[side][2] && this.tilesUsed[side][3]){
+          this.tilesUsed[side] = {1:false,2:false,3:false};
+        }
+        this.pendingTile=null; this.pendingPath=[]; this.stepRemain=0;
+        this.turn = this.opp(side);
+      }
+      buildToriiAt(r,c){
+        const side=this.turn;
+        const lines=this.fullLines(side);
+        const containing = lines.find(ln => ln.cells.some(p=>p.r===r && p.c===c));
+        if(!containing) return false;
+        if(this.torii[r][c]) return false;
+        this.torii[r][c]=side;
+        for(const p of containing.cells){
+          if(p.r===r && p.c===c) continue;
+          if(this.torii[p.r][p.c]) continue;
+          this.followers[p.r][p.c]=null;
+        }
+        if(this.countTorii(side) >= 4){ this.ended=true; this._winner=side; this.building=false; this.buildChoices=[]; return true; }
+        const more=this.fullLines(side);
+        if(more.length>0){
+          const cand=[];
+          for(const ln of more){
+            for(const p of ln.cells){
+              if(!this.torii[p.r][p.c] && this.followers[p.r][p.c]===side){
+                cand.push(p);
+              }
+            }
+          }
+          const map=new Map(); for(const p of cand){ map.set(p.r+','+p.c, p); }
+          this.buildChoices = Array.from(map.values());
+          this.building = true;
+        }else{
+          this.building=false; this.buildChoices=[];
+          this.endTurnFlipAndPass(side);
+        }
+        return true;
+      }
+      step(action){
+        const g=this.clone();
+        if(action.type==='chooseTile'){ g.startWithTile(action.k); return g; }
+        if(action.type==='movePath'){ 
+          const res=g.applyPath(action.path); 
+          if(res.needBuild && g.buildChoices.length){
+            const p=g.buildChoices[0]; g.buildToriiAt(p.r,p.c);
+          }
+          return g; 
+        }
+        return g;
+      }
+      clone(){
+        const g = new ToriiGame();
+        g.spirit = { R:{...this.spirit.R}, B:{...this.spirit.B} };
+        g.followers = this.followers.map(row=>row.slice());
+        g.torii = this.torii.map(row=>row.slice());
+        g.turn = this.turn;
+        g.tilesUsed = { R:{...this.tilesUsed.R}, B:{...this.tilesUsed.B} };
+        g.pendingTile = this.pendingTile;
+        g.pendingPath = this.pendingPath.map(p=>({r:p.r,c:p.c}));
+        g.stepRemain = this.stepRemain;
+        g.building = this.building;
+        g.buildChoices = this.buildChoices.map(p=>({r:p.r,c:p.c}));
+        g.ended = this.ended; g._winner=this._winner;
+        return g;
+      }
+    }
+
+    /* ========= MCTS（不變） ========= */
+    class MCTS {
+      constructor({iterations=1500, c=Math.SQRT2}={}){ this.iterations=iterations; this.c=c; }
+      actions(state){
+        if(state.isTerminal()) return [];
+        if(state.pendingTile===null){
+          const ks = state.availableTiles(state.turn);
+          return ks.map(k=>({type:'chooseTile', k}));
+        }
+        const paths = state.enumeratePaths(state.stepRemain||state.pendingTile);
+        return paths.map(p=>({type:'movePath', path:p}));
+      }
+      rollout(state, rootPlayer, limit=60){
+        let s=state.clone(); let steps=0;
+        while(steps<limit && !s.isTerminal()){
+          const acts=this.actions(s);
+          if(acts.length===0) break;
+          const a=acts[Math.floor(Math.random()*acts.length)];
+          s = s.step(a);
+          steps++;
+        }
+        if(s.isTerminal()){
+          const w=s.winner(); if(!w) return 0.5;
+          return (w===rootPlayer?1:0);
+        }
+        return 0.5;
+      }
+      uctSelect(node, rootPlayer){
+        let best=null, bestScore=-1e9;
+        const isRootTurn = node.state.turn===rootPlayer;
+        for(const ch of node.children){
+          const q = ch.value/Math.max(1,ch.visits);
+          const exploit = isRootTurn ? q : (1-q);
+          const explore = this.c * Math.sqrt(Math.log(Math.max(1,node.visits)) / Math.max(1,ch.visits));
+          const score = exploit + explore;
+          if(score>bestScore){ best=ch; bestScore=score; }
+        }
+        return best;
+      }
+      choose(state){
+        const root={state:state.clone(), parent:null, action:null, children:[], unexpanded:this.actions(state), visits:0, value:0};
+        const rootPlayer=state.turn;
+        if(root.unexpanded.length===0 && root.children.length===0) return null;
+        for(let i=0;i<this.iterations;i++){
+          let node=root;
+          while(node.unexpanded.length===0 && node.children.length>0){ node=this.uctSelect(node, rootPlayer); }
+          if(node.unexpanded.length>0){
+            const idx=Math.floor(Math.random()*node.unexpanded.length);
+            const action=node.unexpanded.splice(idx,1)[0];
+            const nextState = node.state.step(action);
+            const child={state:nextState, parent:node, action, children:[], unexpanded:this.actions(nextState), visits:0, value:0};
+            node.children.push(child); node=child;
+          }
+          const reward=this.rollout(node.state, rootPlayer);
+          while(node){ node.visits++; node.value += reward; node=node.parent; }
+        }
+        if(root.children.length===0) return null;
+        root.children.sort((a,b)=>b.visits-a.visits);
+        const best=root.children[0];
+        const winrate = best.visits>0 ? (best.value/best.visits) : 0.5;
+        return {...best.action, winrate};
+      }
+    }
+
+    /* ========= UI ========= */
+    const elBoard = document.getElementById('board');
+    const elLog   = document.getElementById('log');
+    const elHint  = document.getElementById('hint');
+    const tilesR  = document.getElementById('tilesR');
+    const tilesB  = document.getElementById('tilesB');
+    const supR = document.getElementById('supR'); const supB = document.getElementById('supB');
+    const torR = document.getElementById('torR'); const torB = document.getElementById('torB');
+    const redTypeSel = document.getElementById('redType');
+    const blueTypeSel = document.getElementById('blueType');
+    const itersInput = document.getElementById('iters');
+    const btnStart   = document.getElementById('btnStart');
+
+    document.querySelectorAll('.tabs .tab').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tabs .tab').forEach(b=>b.classList.remove('active'));
+        document.querySelectorAll('.tabwrap > div').forEach(div=>div.style.display='none');
+        btn.classList.add('active');
+        document.getElementById(btn.dataset.target).style.display='block';
+      });
+    });
+
+    let G=null, M=null; let waitingHuman=false; let legalNow=[]; let buildSet=new Set(); let stepCount=0;
+
+    function logLine(html){ const p=document.createElement('p'); p.innerHTML=html; elLog.appendChild(p); elLog.scrollTop=elLog.scrollHeight; }
+    function playerLabel(id){ return id==='R' ? '紅方' : '藍方'; }
+    function setHint(){
+      if(!G){ elHint.textContent=''; return; }
+      if(G.isTerminal()){ const w=G.winner(); elHint.textContent = `${playerLabel(w)}獲勝`; return; }
+      const role = (G.turn==='R'? redTypeSel.value : blueTypeSel.value);
+      if(G.building){
+        elHint.textContent = `${playerLabel(G.turn)}：請在完整直線中的一顆己方信徒上建鳥居`;
+      } else if(G.pendingTile===null){
+        elHint.textContent = `${playerLabel(G.turn)}：請選擇未使用的板塊（1/2/3）`;
+      } else {
+        elHint.textContent = `${playerLabel(G.turn)}：尚餘 ${G.stepRemain} 步，請依序點選落點`;
+      }
+    }
+
+    function renderTiles(){
+      // 紅方
+      const redTilebox = tilesR.closest('.tilebox');
+      if (G.turn === 'R' && G.pendingTile === null) redTilebox.classList.add('active-tiles');
+      else redTilebox.classList.remove('active-tiles');
+      tilesR.innerHTML='';
+      [1,2,3].forEach(k=>{
+        const div=document.createElement('div');
+        div.className='tile red'+(G.tilesUsed.R[k]?' used':'')+((G.turn==='R' && G.pendingTile===k) ? ' selected':'');
+        div.textContent=k;
+        const isTurn = G.turn==='R';
+        const isHuman = redTypeSel.value==='human';
+        const canClick = isTurn && !G.building && G.pendingTile===null && !G.tilesUsed.R[k] && isHuman;
+        div.addEventListener('click', ()=>{
+          if(!canClick) return;
+          G.startWithTile(k);
+          // logStepHeader(); // 不再重複呼叫
+          logLine(`玩家選擇 行動板塊 <b>移動${k}步</b>`);
+          computeLegal(); renderAll();
+        });
+        tilesR.appendChild(div);
+      });
+      // 藍方
+      const blueTilebox = tilesB.closest('.tilebox');
+      if (G.turn === 'B' && G.pendingTile === null) blueTilebox.classList.add('active-tiles');
+      else blueTilebox.classList.remove('active-tiles');
+      tilesB.innerHTML='';
+      [1,2,3].forEach(k=>{
+        const div=document.createElement('div');
+        div.className='tile blue'+(G.tilesUsed.B[k]?' used':'')+((G.turn==='B' && G.pendingTile===k) ? ' selected':'');
+        div.textContent=k;
+        const isTurn = G.turn==='B';
+        const isHuman = blueTypeSel.value==='human';
+        const canClick = isTurn && !G.building && G.pendingTile===null && !G.tilesUsed.B[k] && isHuman;
+        div.addEventListener('click', ()=>{
+          if(!canClick) return;
+          G.startWithTile(k);
+          logStepHeader(k);
+          logLine(`玩家選擇 行動板塊 <b>${k}</b>`);
+          computeLegal(); renderAll();
+        });
+        tilesB.appendChild(div);
+      });
+    }
+
+    function cellEl(r,c){ return elBoard.children[r*4 + c]; }
+
+    /* 顯示用精靈位置（不動規則狀態） */
+    function getDisplayedSpiritPos(side){
+      if(!G) return null;
+      if(G.turn===side && G.pendingTile!==null && G.pendingPath.length>0){
+        return G.pendingPath[G.pendingPath.length-1];
+      }
+      return G.spirit[side];
+    }
+
+    function renderBoard(){
+      elBoard.innerHTML='';
+      for(let r=0;r<4;r++){
+        for(let c=0;c<4;c++){
+          const d=document.createElement('div');
+          d.className='cell';
+          const isLegalMove = legalNow.some(p=>p.r===r && p.c===c);
+          const isBuildChoice = buildSet.has(r+','+c);
+          if(isLegalMove || isBuildChoice) d.classList.add('legal');
+
+          const fol = G.followers[r][c];
+          if(fol){ const t=document.createElement('div'); t.className='token follower '+fol; d.appendChild(t); }
+          const tor = G.torii[r][c];
+          if(tor){ const ring=document.createElement('div'); ring.className='torii '+tor; d.appendChild(ring); }
+
+          const rPos=getDisplayedSpiritPos('R');
+          const bPos=getDisplayedSpiritPos('B');
+          if(rPos.r===r && rPos.c===c){ const s=document.createElement('div'); s.className='spirit R'; d.appendChild(s); }
+          if(bPos.r===r && bPos.c===c){ const s=document.createElement('div'); s.className='spirit B'; d.appendChild(s); }
+
+          d.addEventListener('click', ()=>{
+            if(G.isTerminal()) return;
+            if(G.building){
+              const key=r+','+c;
+              const humanTurn = (G.turn==='R'? redTypeSel.value : blueTypeSel.value)==='human';
+              if(!humanTurn) return;
+              if(!buildSet.has(key)) return;
+              const ok = G.buildToriiAt(r,c);
+              if(ok){
+                logLine(`在 (${r+1}, ${c+1}) 建立鳥居`);
+                if(G.isTerminal()){ logLine(`<b>${playerLabel(G.winner())}達成勝利條件（4 座鳥居）</b>`); }
+                computeLegal(); renderAll();
+                if(!G.building && !G.isTerminal()){ maybeAuto(); }
+              }
+              return;
+            }
+            if(!waitingHuman) return;
+            if(G.pendingTile===null) return;
+            const legal = legalNow.some(p=>p.r===r && p.c===c);
+            if(!legal) return;
+            humanStep({r,c});
+          });
+
+          const coord=document.createElement('div'); coord.className='coords'; coord.textContent=`${r+1},${c+1}`; d.appendChild(coord);
+          elBoard.appendChild(d);
+        }
+      }
+    }
+
+    function updateSupplyUI(){
+      const rFol=G.countFollowers('R'), bFol=G.countFollowers('B');
+      const rTor=G.countTorii('R'), bTor=G.countTorii('B');
+      supR.textContent = `${rFol}/9`; supB.textContent = `${bFol}/9`;
+      torR.textContent = `${rTor}/4`;  torB.textContent = `${bTor}/4`;
+    }
+
+    function computeLegal(){
+      legalNow=[];
+      buildSet.clear();
+      if(G.building){
+        for(const p of G.buildChoices){ buildSet.add(p.r+','+p.c); }
+        return;
+      }
+      if(G.pendingTile!==null && G.stepRemain>0){
+        const pos = G.pendingPath.length ? G.pendingPath[G.pendingPath.length-1] : G.currentPos();
+        legalNow = G.nextSteps(pos.r, pos.c);
+      }
+    }
+
+    function logStepHeader(){
+      const n = stepCount+1;
+      const who = G.turn==='R'
+        ? '<b class="${cls}"><span style="color:#f87171">紅方回合</span></b>'
+        : '<b class="${cls}"><span style="color:#60a5fa">藍方回合</span></b>';
+      logLine(`第${n}步，現在輪到 ${who}`);
+      updateWinrateBar();
+    }
+
+    /* === 顯示層動畫 === */
+    let _animating=false;
+    async function animateStep(side, from, to, restore=true, keepGhost=false){
+      const start=centerOfCell(from.r,from.c);
+      const end=centerOfCell(to.r,to.c);
+      const ghost=makeSpiritGhost(side);
+      ghost.style.transform=`translate(${start.x}px, ${start.y}px) translate(-50%,-60%)`;
+      elBoard.appendChild(ghost);
+
+      const hidePos=getDisplayedSpiritPos(side);
+      const hideCell=cellEl(hidePos.r, hidePos.c);
+      const hideEl=hideCell? hideCell.querySelector('.spirit.'+side):null;
+      if(hideEl) hideEl.style.opacity='0';
+
+      await new Promise(requestAnimationFrame);
+      ghost.style.transform=`translate(${end.x}px, ${end.y}px) translate(-50%,-60%)`;
+      await wait(200);
+
+      // keepGhost: 保留在畫面上，交給呼叫端在重繪後移除，避免看到空檔
+      if(!keepGhost){
+        ghost.remove();
+        if(restore && hideEl) hideEl.style.opacity='';
+        return null;
+      }else{
+        if(restore && hideEl) hideEl.style.opacity='';
+        return ghost;
+      }
+    }
+
+    // 供 AI/隨機使用：依序播放整條路徑（最後一步保留幽靈，回傳它）
+    async function animateAIPath(side, path){
+      if(!path || !path.length) return null;
+      _animating = true;
+      let from = getDisplayedSpiritPos(side);
+      for(let i=1;i<=path.length;i++){
+        const to = path[i-1];
+        G.pendingPath = path.slice(0,i);
+        G.stepRemain = path.length-i;
+        renderAll();
+        await animateStep(side, from, to, true, false);
+        from = to;
+      }
+      _animating = false;
+      return null;
+    }
+
+    // 玩家一步一動（保持原本恢復）
+    async function humanStep(cell){
+      if(_animating) return;
+      const side=G.turn;
+      const from = getDisplayedSpiritPos(side);
+      const to   = cell;
+
+      _animating=true;
+      await animateStep(side, from, to, true, false);
+      _animating=false;
+
+      G.pendingPath.push(cell);
+      G.stepRemain--;
+      if(G.stepRemain>0){
+        computeLegal(); renderAll();
+        setHint(); return;
+      }
+      finalizeTurn(false, null, 'player', G.pendingPath.slice());
+    }
+
+    function summarizePath(path){
+      return path.map(p=>`(${p.r+1}, ${p.c+1})`).join(' → ');
+    }
+
+    function finalizeTurn(byAI=false, aiInfo=null, pathType=null, pathArg=null){
+      const path = pathArg || G.pendingPath;
+      const res = G.applyPath(path);
+      let who = '';
+      if(pathType==='ai') who = 'AI路徑：';
+      else if(pathType==='random') who = '隨機路徑：';
+      else who = '玩家路徑：';
+      if(byAI){
+        if(aiInfo && typeof aiInfo.winrate==='number'){
+          logLine(`${who}${summarizePath(path)} | <b>勝率${(aiInfo.winrate*100).toFixed(1)}%</b>`);
+        }else{
+          logLine(`${who}${summarizePath(path)}`);
+        }
+      }else{
+        logLine(`${who}${summarizePath(path)}`);
+      }
+
+      if(G.isTerminal()){
+        logLine(`<b>${playerLabel(G.winner())}達成勝利條件（9 枚信徒）</b>`);
+        stepCount++; computeLegal(); renderAll(); updateWinrateBar(); return;
+      }
+
+      if(res.needBuild){
+        logLine(`形成完整直線，請選擇要在哪顆信徒上建鳥居`);
+        computeLegal(); renderAll();
+        const role = (G.turn==='R'? redTypeSel.value : blueTypeSel.value);
+        if(role!=='human'){
+          setTimeout(()=>autoBuildPhase(role), 200);
+        }
+      }else{
+        stepCount++;
+        // 只在換手時呼叫 logStepHeader
+        logStepHeader();
+        computeLegal(); renderAll();
+        maybeAuto();
+      }
+    }
+
+    async function autoBuildPhase(role){
+      if(!G.building || G.isTerminal()) return;
+      await wait(200);
+      let pick=null;
+      if(role==='random'){
+        pick = G.buildChoices[Math.floor(Math.random()*G.buildChoices.length)];
+      }else{
+        pick = G.buildChoices[0];
+      }
+      if(pick){
+        G.buildToriiAt(pick.r, pick.c);
+        logLine(`AI在 (${pick.r+1}, ${pick.c+1}) 建立鳥居`);
+      }
+      computeLegal(); renderAll();
+      if(G.isTerminal()){
+        logLine(`<b>${playerLabel(G.winner())}達成勝利條件（4 座鳥居）</b>`);
+        return;
+      }
+      if(G.building){
+        await autoBuildPhase(role);
+      }else{
+        stepCount++;
+        maybeAuto();
+      }
+    }
+
+    function renderAll(){
+      renderTiles();
+      renderBoard();
+      updateSupplyUI();
+      setHint();
+    }
+
+    // 勝率條更新
+    function updateWinrateBar(){
+      // 這裡以 MCTS 預測紅方勝率（若無AI則50%）
+      let red = 0.5, blue = 0.5;
+      if (G && G.isTerminal()) {
+        if (G.winner() === 'R') { red = 1; blue = 0; }
+        else if (G.winner() === 'B') { red = 0; blue = 1; }
+      } else if(typeof MCTS === 'function' && G){
+        try{
+          const m = new MCTS({iterations: 2000});
+          const res = m.choose(G);
+          if(res && typeof res.winrate==='number'){
+            if(G.turn==='R'){ red = res.winrate; blue = 1-res.winrate; }
+            else { blue = res.winrate; red = 1-res.winrate; }
+          }
+        }catch(e){}
+      }
+      document.getElementById('barRed').style.width = (red*100)+'%';
+      document.getElementById('barBlue').style.width = (blue*100)+'%';
+      document.getElementById('redRate').textContent = `紅方勝率${(red*100).toFixed(1)}%`;
+      document.getElementById('blueRate').textContent = `藍方勝率${(blue*100).toFixed(1)}%`;
+    }
+
+    function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
+    function chooseByMCTS(state){
+      const m = M || (M=new MCTS({iterations: Math.max(200, Number(itersInput.value)||2000)}));
+      m.iterations = Math.max(200, Number(itersInput.value)||2000);
+      return m.choose(state);
+    }
+
+    async function maybeAuto(){
+      if(G.isTerminal()) return;
+
+      if(G.building){
+        const role = (G.turn==='R'? redTypeSel.value : blueTypeSel.value);
+        if(role==='human'){
+          waitingHuman=true; computeLegal(); renderAll(); return;
+        }
+        autoBuildPhase(role);
+        return;
+      }
+
+      const role = (G.turn==='R'? redTypeSel.value : blueTypeSel.value);
+      if(role==='human'){
+        waitingHuman = true;
+        computeLegal(); renderAll();
+        return;
+      }
+
+      waitingHuman=false;
+      // logStepHeader(); // 不再重複呼叫
+      if(role==='ai'){ logLine('AI正在思考中...'); }
+
+      await sleep(200);
+
+      // 若未選板塊：先選
+      if(G.pendingTile===null){
+        let k=null;
+        if(role==='random'){
+          const ks=G.availableTiles(G.turn);
+          k = ks[Math.floor(Math.random()*ks.length)];
+        }else{
+          const act=chooseByMCTS(G);
+          if(act && act.type==='chooseTile') k=act.k;
+          else{
+            const ks=G.availableTiles(G.turn);
+            k = ks[Math.floor(Math.random()*ks.length)];
+          }
+        }
+        G.startWithTile(k);
+        if(role==='ai') logLine(`AI選擇 行動板塊 <b>移動${k}步</b>`);
+        else            logLine(`隨機選擇 行動板塊 <b>移動${k}步</b>`);
+      }
+
+      // 選完整路徑
+      let path=null, info=null;
+      if(role==='random'){
+        const paths = G.enumeratePaths(G.stepRemain||G.pendingTile);
+        if(paths.length===0){ logLine(`<span class="pill bad">${playerLabel(G.turn)}無路可走（路徑為空）</span>`); return; }
+        path = paths[Math.floor(Math.random()*paths.length)];
+      }else{
+        const act=chooseByMCTS(G);
+        if(act && act.type==='movePath'){ path=act.path; info={winrate:act.winrate}; }
+        else{
+          const paths = G.enumeratePaths(G.stepRemain||G.pendingTile);
+          if(paths.length===0){ logLine(`<span class="pill bad">${playerLabel(G.turn)}無路可走（路徑為空）</span>`); return; }
+          path = paths[0];
+        }
+      }
+
+      // 逐步動畫：最後一步保留幽靈，重繪後再移除，避免收尾瞬間消失
+      await animateAIPath(G.turn, path);
+
+      await sleep(200);
+      finalizeTurn(role==='ai', info, role==='random'?'random':'ai', path);
+      renderAll();
+    }
+
+    function startGame(){
+      elLog.innerHTML=''; M=null; waitingHuman=false; legalNow=[]; buildSet.clear(); stepCount=0;
+      G = new ToriiGame();
+      logLine('新對局開始 · 紅方先手（紅方「2」號板塊已使用）');
+      logStepHeader();
+      renderAll();
+      maybeAuto();
+    }
+
+    btnStart.addEventListener('click', startGame);
+
+    // 等高同步（右欄跟左欄）
+    (function(){
+      const app = document.querySelector('.app');
+      const left = document.querySelector('.card.left');
+      if(!app || !left) return;
+      const apply = ()=>{
+        if (window.matchMedia('(max-width: 900px)').matches){ app.style.removeProperty('--leftH'); return; }
+        const h = Math.round(left.getBoundingClientRect().height); app.style.setProperty('--leftH', h + 'px');
+      };
+      const ro = new ResizeObserver(apply);
+      ro.observe(left);
+      window.addEventListener('resize', apply, {passive:true});
+      window.addEventListener('load', apply);
+      apply();
+    })();
+
+    // 啟動
+    startGame();
+  </script>
+</body>
+</html>
