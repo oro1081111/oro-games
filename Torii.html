@@ -86,8 +86,8 @@
     .tab{padding:8px 14px; border-radius:999px; border:1px solid #2b396e; background:#0b1333; color:#dbe6ff; cursor:pointer}
     .tab.active{background:#1b2a5a; border-color:#3a57a5}
     .tabwrap{flex:1 1 auto; display:flex; min-height:0}
-    .log{padding:14px 18px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background:#0a0f25; border-top:1px solid #24305f; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius); flex:1 1 auto; min-height:0; height:auto}
-    .log p{margin:6px 0}
+    .log{padding:14px 18px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background:#0a0f25; border-top:1px solid #24305f; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius); flex:1 1 auto; min-height:0; height:auto; min-width:0; width:100%;}
+    .log p{margin:6px 0;}
     .rules{padding:16px 18px; overflow:auto; background:#0a0f25; border-top:1px solid #24305f; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius); font-family: inherit; line-height:1.6; flex:1 1 auto; min-height:0; height:auto}
     .hint{font-size:12px; color:var(--muted); padding:0 18px 16px}
     .sep{height:1px;background:#24305f;margin:14px 0}
@@ -271,7 +271,7 @@
           <h3 style="margin:0 0 8px">遊戲規則</h3>
           <ol style="margin:0 0 8px 18px; padding:0">
             <li>棋盤為 4×4；每位玩家：森靈×1（三角）、信徒×9（實心圓）、鳥居×4（空心圓）、行動板塊 1/2/3。</li>
-            <li>起始：紅森靈放置在 (2,2)，藍森靈放置在 (3,3)。紅方先手，紅色「2」板塊翻至已使用面。</li>
+            <li>起始：紅森靈放置在 (2,2)，藍森靈放置在 (3,3)。紅方先手，行動板塊2翻至已使用面；藍方後手，行動板塊1翻至已使用面。</li>
             <li>每回合包含四步驟：
               <ul>
                 <li><b>1. 選行動板塊：</b>從尚未使用的行動板塊中選擇 1 張，翻至已使用面；數字表示必須移動的步數。</li>
@@ -294,18 +294,20 @@
 
         <div class="rules" id="about" style="display:none">
           <h3 style="margin:0 0 8px">遊戲介紹</h3>
+          
           <p>
-            Torii 跳躍森靈 是一款雙人棋遊戲。玩家操縱森靈在棋盤上跳躍嬉戲，Torii（日文鳥居）象徵神域門戶，也是森靈的遊樂場！  
-            兩個森靈永不在同一條直線，因此必須穿梭跳躍、散播信徒並建造鳥居。當你率先蓋好 4 座鳥居，或在棋盤上散播滿 9 枚信徒時，即刻獲勝！
+            Torii 跳躍森靈 是一款雙人棋遊戲。玩家操縱森靈在棋盤上跳躍嬉戲，Torii（日文鳥居）象徵神域門戶，也是森靈的遊樂場！兩個森靈永不在同一條直線，因此必須穿梭跳躍、散播信徒並建造鳥居。當你率先蓋好 4 座鳥居，或在棋盤上散播滿 9 枚信徒時，即刻獲勝！<br>
+            BGG頁面：<a href="https://boardgamegeek.com/boardgame/424808/torii" target="_blank">Torii 跳躍森靈</a>
           </p>
-
+          <div style="display:flex;justify-content:center;margin:12px 0;">
+            <img src="Torii_封面.png" alt="跳躍森靈桌遊封面" style="max-width:220px;max-height:320px;border-radius:12px;box-shadow:0 4px 16px #0006;">
+          </div>
           <h3 style="margin:12px 0 6px">遊戲設計</h3>
           <p>
             <strong>kolordeep 深顏色工作室 - 陳致寬 Kuan Chen</strong><br>
             熱愛抽象棋的臺灣原創桌遊設計團隊，設計作品包括《攻鎖棋》、《疫途》、《跳躍森靈》、《Dragonarium》等，持續努力中！<br>
             臉書粉專：<a href="https://www.facebook.com/kolordeepboardgamestudio/" target="_blank">kolordeep boardgame studio</a>
           </p>
-
           <h3 style="margin:12px 0 6px">遊戲出版</h3>
           <p>
             <strong>桌遊愛樂事 EmperorS4</strong><br>
@@ -313,11 +315,9 @@
             臉書粉專：<a href="https://www.facebook.com/EmperorS4" target="_blank">EmperorS4 Facebook</a><br>
             官方網頁：<a href="https://tw.emperors4.com/" target="_blank">https://tw.emperors4.com/</a>
           </p>
-          </div>
-      </div>
-
-      <div class="footer">未來預計寫：已取得出版社與設計師同意製作分享（現在還未取得）</div>
+        </div>
     </div>
+    <div class="footer">已取得原出版社與設計師同意製作並分享</div>
   </div>
 
   <script>
@@ -343,7 +343,7 @@
         this.followers = Array.from({length:4},()=>Array(4).fill(null));
         this.torii = Array.from({length:4},()=>Array(4).fill(null));
         this.turn='R';
-        this.tilesUsed = { R:{1:false,2:true,3:false}, B:{1:false,2:false,3:false} };
+        this.tilesUsed = { R:{1:false,2:true,3:false}, B:{1:true,2:false,3:false} };
         this.pendingTile = null;
         this.pendingPath = [];
         this.stepRemain = 0;
@@ -1039,6 +1039,7 @@
       window.addEventListener('resize', apply, {passive:true});
       window.addEventListener('load', apply);
       apply();
+      setTimeout(apply, 0);
     })();
 
     // 啟動
