@@ -115,6 +115,17 @@
         <div class="sub">設計者：奧羅</div>
       </div>
       <div class="board-wrap">
+        <!-- 勝率條 -->
+        <div class="winrate-bar" style="margin:0 0 8px 0;">
+          <div class="bar" style="display:flex;height:18px;border-radius:8px;overflow:hidden;background:#1a2a1a;border:1px solid #fff;">
+            <div id="barBlack" style="background:#222;height:100%;transition:width .3s"></div>
+            <div id="barWhite" style="background:#e9eefb;height:100%;transition:width .3s"></div>
+          </div>
+          <div class="labels" style="display:flex;justify-content:space-between;font-size:13px;margin-top:2px;">
+            <span id="blackRate" style="color:#222">黑方勝率50%</span>
+            <span id="whiteRate" style="color:#e9eefb">白方勝率50%</span>
+          </div>
+        </div>
         <div id="board" class="board"></div>
       </div>
       <div class="hint" id="hint">黑方先手：請點選任一黑方棋子以放置焦點</div>
@@ -429,6 +440,7 @@ function colorZh(c){ return ({red:'紅',blue:'藍',yellow:'黃',green:'綠'})[c]
 function logStepHeader() {
   if (!G || !G.focus) return;
   logLine(`第${stepCount}步，現在輪到 ${playerLabel(G.turn)}${colorZh(G.focus.color)}棋移動`);
+  updateWinrateBar();
 }
 
 function setHint(){
@@ -488,6 +500,7 @@ function setHint(){
         }
       }
       setHint();
+      updateWinrateBar();
     }
 
     function computeLegal(){ if(!G.focus){ legalNow=[]; return; } legalNow = (G.turn===G.focus.owner) ? G.legalMovesForFocus() : []; }
@@ -553,6 +566,7 @@ async function doMove(dest, byAI = false, aiInfo = null){
     const w = G.winner();
     const loser = (w==='B'?'白方':'黑方');
     logLine(`${loser}無法合法移動，${playerLabel(w)}勝利`);
+    updateWinrateBar();
     }
   computeLegal(); render(); await maybeAuto();
 }
@@ -628,6 +642,38 @@ function startGame(){
 
     btnStart.addEventListener('click', startGame);
     btnReset.addEventListener('click', ()=>{ elLog.innerHTML=''; });
+
+function updateWinrateBar(){
+  let black = 0.5, white = 0.5;
+  if(G && G.isTerminal()){
+    if(G.winner()==='B'){ black=1; white=0; }
+    else if(G.winner()==='W'){ black=0; white=1; }
+  }else if(typeof MCTS==='function' && G){
+    try{
+      const m = new MCTS({iterations: 1500});
+      // 若 G.focus 尚未設，複製 G 並隨機設一個可用焦點
+      let gTest = G;
+      if(!G.focus && G.turn==='B'){
+        const colors=['red','blue','yellow','green'];
+        for(const col of colors){
+          const tmp = G.clone();
+          if(tmp.tryPlaceInitialFocusOn('B',col) && tmp.legalMovesForFocus().length>0){
+            gTest = tmp; break;
+          }
+        }
+      }
+      const res = m.choose(gTest);
+      if(res && typeof res.winrate==='number'){
+        if(gTest.turn==='B'){ black=res.winrate; white=1-res.winrate; }
+        else{ white=res.winrate; black=1-res.winrate; }
+      }
+    }catch(e){}
+  }
+  document.getElementById('barBlack').style.width = (black*100)+'%';
+  document.getElementById('barWhite').style.width = (white*100)+'%';
+  document.getElementById('blackRate').innerHTML = `<span style="color:#81848A">黑方勝率${(black*100).toFixed(1)}%</span>`;
+  document.getElementById('whiteRate').textContent = `白方勝率${(white*100).toFixed(1)}%`;
+}
 
     // 等高同步（右欄跟左欄）
     (function(){

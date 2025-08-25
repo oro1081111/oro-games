@@ -116,9 +116,20 @@
         <h1>四步棋 Four-Moves-Chess</h1>
         <div class="sub">設計者:未知</div>
       </div>
-      <div class="board-wrap">
-        <div id="board" class="board"></div>
+    <div class="board-wrap">
+      <!-- 勝率條 -->
+      <div class="winrate-bar" style="margin:0 0 8px 0;">
+        <div class="bar" style="display:flex;height:18px;border-radius:8px;overflow:hidden;background:#1a2a1a;border:1px solid #273163;">
+          <div id="barRed" style="background:#f87171;height:100%;transition:width .3s"></div>
+          <div id="barBlue" style="background:#60a5fa;height:100%;transition:width .3s"></div>
+        </div>
+        <div class="labels" style="display:flex;justify-content:space-between;font-size:13px;margin-top:2px;">
+          <span id="redRate" style="color:#f87171">紅方勝率50%</span>
+          <span id="blueRate" style="color:#60a5fa">藍方勝率50%</span>
+        </div>
       </div>
+      <div id="board" class="board"></div>
+    </div>
       <div class="hint" id="hint">紅色玩家請點擊任一高亮格落子</div>
     </div>
 
@@ -308,7 +319,7 @@
 
     // ====== 簡易 MCTS ======
     class MCTS{
-      constructor({iterations=1500, c_ucb=Math.SQRT2, rolloutMax=30}={}){
+      constructor({iterations=2000, c_ucb=Math.SQRT2, rolloutMax=30}={}){
         this.iterations = iterations;
         this.c_ucb = c_ucb;
         this.rolloutMax = rolloutMax;
@@ -477,6 +488,7 @@
       computeLegal(); render();
       if(game.isTerminal()){
         render(); setBoardHintByTurn();
+        updateWinrateBar();
         const loser = game.currentPlayer(); const winner = (loser==='R'?'B':'R');
         const loserPlayer = loser==='R' ? '紅色玩家' : '藍色玩家';
         const winnerPlayer = winner==='R' ? '紅色玩家' : '藍色玩家';
@@ -487,7 +499,13 @@
     }
 
     function playerLabel(p){ return p==='R' ? '紅色玩家' : '藍色玩家'; }
-    function logTurnHeader(){ const who = game.currentPlayer(); const whoLbl = playerLabel(who); const cls = (who==='R'?'t-red':'t-blue'); logLine(`第<b>${ply}</b>步 · 現在是 <b class="${cls}">${whoLbl}</b> 的回合`); }
+    function logTurnHeader(){
+      const who = game.currentPlayer();
+      const whoLbl = playerLabel(who);
+      const cls = (who==='R'?'t-red':'t-blue');
+      logLine(`第<b>${ply}</b>步 · 現在是 <b class="${cls}">${whoLbl}</b> 的回合`);
+      updateWinrateBar();
+    }
     function setBoardHintByTurn(){
       if(!elHint) return;
       if(game.isTerminal()){
@@ -569,6 +587,28 @@
 
     btnStart.addEventListener('click', startGame);
     btnReset.addEventListener('click', ()=>{ elLog.innerHTML=''; });
+
+    // 勝率條更新
+    function updateWinrateBar(){
+      let red = 0.5, blue = 0.5;
+      if(game && game.isTerminal()){
+        if(game.winner()==='R'){ red=1; blue=0; }
+        else if(game.winner()==='B'){ red=0; blue=1; }
+      }else if(typeof MCTS==='function' && game){
+        try{
+          const m = new MCTS({iterations: 1500});
+          const res = m.chooseWithStats(game);
+          if(res && typeof res.p==='number'){
+            if(game.currentPlayer()==='R'){ red=res.p; blue=1-res.p; }
+            else{ blue=res.p; red=1-res.p; }
+          }
+        }catch(e){}
+      }
+      document.getElementById('barRed').style.width = (red*100)+'%';
+      document.getElementById('barBlue').style.width = (blue*100)+'%';
+      document.getElementById('redRate').textContent = `紅方勝率${(red*100).toFixed(1)}%`;
+      document.getElementById('blueRate').textContent = `藍方勝率${(blue*100).toFixed(1)}%`;
+    }
 
     // ===== Self-test (console) =====
     (function(){

@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <title>Torii 跳躍森靈</title>
+  <title>四色棋 Four Color Chess</title>
   <style>
     :root{
       --bg: #0b1020;
@@ -15,21 +15,11 @@
       --accent-2:#7c5cff;
       --good:#00d18f;
       --bad:#ff5c7c;
+      --cell:#151f43;
+      --cell-h:#1a2552;
+      --cell-ring:#dff6ff;
       --shadow: 0 10px 30px rgba(0,0,0,.35);
       --radius: 16px;
-
-      /* 棋盤草綠 */
-      --grass: #3b8d47;
-      --grass-h: #247331;
-      --grass-border:#2b7a38;
-
-      /* 既有配色（信徒/鳥居維持不變） */
-      --red:#f87171;
-      --blue:#60a5fa;
-
-      /* 精靈更深色 */
-      --red-deep:#dc2626;
-      --blue-deep:#2563eb;
     }
     *{box-sizing:border-box}
     html,body{height:100%}
@@ -47,37 +37,39 @@
 
     .board-wrap{padding:20px}
     .board{display:grid; grid-template-columns: repeat(4, 1fr); gap:10px; position:relative}
-    .cell{
-      position:relative; aspect-ratio:1 / 1; border-radius:12px;
-      background:var(--grass); border:1px solid var(--grass-border);
-      display:flex; align-items:center; justify-content:center;
-      transition:transform .08s ease, background .15s ease, border-color .2s ease;
-    }
-    .cell:hover{ background:var(--grass-h) }
-    .cell.legal{ outline: 3px solid #dff6ff; outline-offset: -3px; cursor:pointer; box-shadow: 0 0 0 2px rgba(125,211,252,.2) inset }
-    .coords{position:absolute; bottom:6px; right:8px; font-size:10px; color:#d9f7e0; opacity:.6}
+    .cell{position:relative; aspect-ratio:1 / 1; background:var(--cell); border:1px solid #283569; border-radius:12px; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:28px; color:#dbe6ff; transition:transform .08s ease, background .15s ease, border-color .2s ease;}
+    .cell:hover{background:var(--cell-h)}
+    .cell.legal{outline: 3px solid var(--cell-ring); outline-offset: -3px; cursor:pointer; box-shadow: 0 0 0 2px rgba(125,211,252,.3) inset}
+    .coords{position:absolute; bottom:6px; right:8px; font-size:10px; color:#94a3b8; opacity:.6}
 
-    /* === 物件層級：信徒(1) < 鳥居(2) < 精靈(3) === */
-    .token{position:absolute; border-radius:50%;}
-    .follower{ inset:20%; z-index:1; }
-    .follower.R{ background: var(--red); box-shadow: 0 6px 14px rgba(0,0,0,.35) }
-    .follower.B{ background: var(--blue); box-shadow: 0 6px 14px rgba(0,0,0,.35) }
+    /* === 亮色版棋盤（四色） === */
+    .c-red{ background:#c34a5a; }
+    .c-red:hover{ background:#d05566; }
+    .c-blue{ background:#2e5fd1; }
+    .c-blue:hover{ background:#3a6fee; }
+    .c-yellow{ background:#c9a01a; }
+    .c-yellow:hover{ background:#d6ad23; }
+    .c-green{ background:#1ea371; }
+    .c-green:hover{ background:#21b481; }
 
-    .torii{ position:absolute; inset:8%; border-radius:50%; background:transparent; pointer-events:none; box-shadow: inset 0 0 0 4px currentColor; z-index:2; }
-    .torii.R{ color: var(--red); }
-    .torii.B{ color: var(--blue); }
-
-    .spirit{ position:absolute; width:0; height:0; transform: translateY(6%); z-index:3; }
-    .spirit.R{ border-left: 18px solid transparent; border-right: 18px solid transparent; border-bottom: 32px solid var(--red-deep); }
-    .spirit.B{ border-left: 18px solid transparent; border-right: 18px solid transparent; border-bottom: 32px solid var(--blue-deep); }
+    /* 棋子（固定自帶顏色，不再受格色影響） */
+    .piece{position:absolute; inset:12%; border-radius:50%; border:6px solid currentColor; background:transparent; box-shadow: 0 6px 16px rgba(0,0,0,.35), 0 0 0 2px rgba(255,255,255,0.10) inset; pointer-events:none; display:flex; align-items:center; justify-content:center;}
+    .ownerB{ color:#000; } /* 黑框 */
+    .ownerW{ color:#fff; } /* 白框 */
+    .piece.p-red{ background:#ff6b6b; }
+.piece.p-blue{ background:#58a6ff; }
+.piece.p-yellow{ background:#ffd166; }
+.piece.p-green{ background:#2dd4a7; }
+    .focus-dot{ position:absolute; width:40%; height:40%; border-radius:50%; background:#5e0a86; top:30%; left:30%; }
 
     .panel{padding:16px 18px}
     .grid2{display:grid; grid-template-columns:1fr 1fr; gap:12px}
     .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap}
     .row.nowrap{flex-wrap:nowrap}
     label{font-size:12px; color:var(--muted)}
-    select,input,textarea,button{background:#0e1430; color:#e9eefb; border:1px solid #273163; border-radius:10px; padding:8px 10px; font-size:14px}
+    select,input,textarea,button{background:#0e1430; color:var(--text); border:1px solid #273163; border-radius:10px; padding:8px 10px; font-size:14px}
     input[type="number"]{width:120px}
+    textarea{width:100%; height:110px; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;}
     button{cursor:pointer; border:1px solid #394685; background:linear-gradient(180deg,#1a244e,#121a33); padding:10px 14px; font-weight:700}
     button.primary{background:linear-gradient(180deg, #2a76ff, #2356ce); border-color:#2d5fd1}
     button.ghost{background:transparent}
@@ -89,75 +81,26 @@
     .log{padding:14px 18px; overflow:auto; font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace; background:#0a0f25; border-top:1px solid #24305f; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius); flex:1 1 auto; min-height:0; height:auto}
     .log p{margin:6px 0}
     .rules{padding:16px 18px; overflow:auto; background:#0a0f25; border-top:1px solid #24305f; border-bottom-left-radius:var(--radius); border-bottom-right-radius:var(--radius); font-family: inherit; line-height:1.6; flex:1 1 auto; min-height:0; height:auto}
+
     .hint{font-size:12px; color:var(--muted); padding:0 18px 16px}
     .sep{height:1px;background:#24305f;margin:14px 0}
     .footer{padding:12px 18px; font-size:12px; color:#99a4c7; margin-top:auto}
-
-    /* 供應區與行動板塊（左側） */
-    .leftExtras{ padding: 0 20px 18px; display:grid; gap:12px; }
-    .supply{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-    .supply .box{ background:#0a0f25; border:1px solid #24305f; border-radius:12px; padding:10px; }
-    .supply h4{ margin:0 0 6px; font-size:13px; color:#cfe7ff }
-    .supply .row{ justify-content:space-between }
-    .count{ font-size:13px; color:#9fb0d6 }
-    .mini{ display:flex; gap:6px; align-items:center }
-    .dot{ width:12px; height:12px; border-radius:50% }
-    .dot.R{ background:var(--red) } .dot.B{ background:var(--blue) }
-    .ring{ width:12px; height:12px; border-radius:50%; box-shadow: inset 0 0 0 2px currentColor; }
-    .ring.R{ color:var(--red) } .ring.B{ color:var(--blue) }
-
-    .tiles{ display:grid; grid-template-columns: 1fr 1fr; gap:12px; }
-    .tilebox{ background:#0a0f25; border:1px solid #24305f; border-radius:12px; padding:10px; transition:box-shadow .18s;}
-    .tilebox.active-tiles {
-      box-shadow: 0 0 0 3px #6ee7ff, 0 0 16px 4px #6ee7ff44;
-      border-color: #6ee7ff;
-      z-index: 10;
-    }
-    .tilebox h4{ margin:0 0 6px; font-size:13px; color:#cfe7ff }
-    .tileRow{ display:flex; gap:8px; flex-wrap:wrap }
-    .tile{
-      min-width:44px; padding:8px 10px; border-radius:10px; border:1px solid #394685;
-      background:linear-gradient(180deg,#1a244e,#121a33);
-      font-weight:800; text-align:center; cursor:pointer; user-select:none;
-      transition: transform .12s ease, background .15s, border-color .15s;
-    }
-    .tile.selected {
-      background: #6ee7ff;
-      color: #1e2e1e;
-      border-color: #7c5cff;
-      box-shadow: 0 0 0 3px #6ee7ff88;
-      font-weight: 900;
-      z-index: 10;
-    }
-    .tile:hover{ transform: translateY(-1px) }
-    .tile.used{ opacity:.35; cursor:not-allowed } /* 只對「已使用」變暗 */
-    .tile.R{ color:var(--red) } .tile.B{ color:var(--blue) }
-
-    /* 響應式 */
+  
+    /* ===== Responsive ===== */
     .app{display:grid; grid-template-columns: 1.2fr 450px; gap:16px; max-width:1200px; margin:0 auto; padding: max(12px, env(safe-area-inset-top)) 12px 12px 12px;}
     @media (max-width: 900px){ .app{ grid-template-columns:1fr; } .right{ order:2; } .left{ order:1; } .panel{ width:100%; } }
     .board{ max-width: min(92vw, 560px); margin:0 auto; position:relative; }
+    .cell{ aspect-ratio: 1 / 1; font-size: clamp(16px, 6vw, 28px); }
+    .piece{ border-width: clamp(4px, 1vw, 6px); }
     @media (max-width: 420px){ .board{ gap:8px; } .cell .coords{ display:none; } }
     .right .card{ max-width:680px; margin:0 auto; }
+    .right textarea{ width:100%; min-height:120px; font-size:16px; }
+    .right select, .right input, .right button{ font-size:16px; }
     #log{ max-height:none; overflow:auto; }
     .board{ touch-action: manipulation; }
+    /* 等高設定：右側高度跟隨左側（桌機） */
     .card.right{ height: var(--leftH, auto); }
     @media (max-width: 900px){ .card.right{ height:auto; } }
-
-    /* === 顯示層動畫 === */
-    .spirit-ghost{
-      position:absolute;
-      z-index:99;
-      width:0; height:0;
-      border-left: 18px solid transparent;
-      border-right: 18px solid transparent;
-      transform: translate(-50%,-60%);
-      will-change: transform;
-      transition: transform 500ms cubic-bezier(.2,.8,.2,1);
-      pointer-events:none;
-    }
-    .spirit-ghost.R{ border-bottom: 32px solid var(--red-deep); }
-    .spirit-ghost.B{ border-bottom: 32px solid var(--blue-deep); }
   </style>
   <style>
     a { color: #6ee7ff; text-decoration: underline; }
@@ -168,63 +111,55 @@
   <div class="app">
     <div class="card left">
       <div class="header">
-        <h1>Torii 跳躍森靈</h1>
-        <div class="sub">設計者：陳致寬 · 出版社：桌遊愛樂事</div>
+        <h1>四色棋 Four Color Chess</h1>
+        <div class="sub">設計者：奧羅</div>
       </div>
-      <div class="leftExtras">
-        <!-- 供應區 -->
-        <div class="supply">
-          <div class="box">
-            <h4>紅方供應</h4>
-            <div class="row"><span class="mini"><span class="dot R"></span> 信徒</span><span id="supR" class="count">9/9</span></div>
-            <div class="row"><span class="mini"><span class="ring R"></span> 鳥居</span><span id="torR" class="count">0/4</span></div>
+      <div class="board-wrap">
+        <!-- 勝率條 -->
+        <div class="winrate-bar" style="margin:0 0 8px 0;">
+          <div class="bar" style="display:flex;height:18px;border-radius:8px;overflow:hidden;background:#1a2a1a;border:1px solid #fff;">
+            <div id="barBlack" style="background:#222;height:100%;transition:width .3s"></div>
+            <div id="barWhite" style="background:#e9eefb;height:100%;transition:width .3s"></div>
           </div>
-          <div class="box">
-            <h4>藍方供應</h4>
-            <div class="row"><span class="mini"><span class="dot B"></span> 信徒</span><span id="supB" class="count">9/9</span></div>
-            <div class="row"><span class="mini"><span class="ring B"></span> 鳥居</span><span id="torB" class="count">0/4</span></div>
+          <div class="labels" style="display:flex;justify-content:space-between;font-size:13px;margin-top:2px;">
+            <span id="blackRate" style="color:#222">黑方勝率50%</span>
+            <span id="whiteRate" style="color:#e9eefb">白方勝率50%</span>
           </div>
         </div>
-        <!-- 棋盤 -->
-        <div class="board-wrap">
-          <div id="board" class="board"></div>
-        </div>
-        <!-- 行動板塊 -->
-        <div class="tiles">
-          <div class="tilebox">
-            <h4>紅方行動板塊</h4>
-            <div class="tileRow" id="tilesR"></div>
-          </div>
-          <div class="tilebox">
-            <h4>藍方行動板塊</h4>
-            <div class="tileRow" id="tilesB"></div>
-          </div>
-        </div>
+        <div id="board" class="board"></div>
       </div>
-      <div class="hint" id="hint">紅方先手：請從未使用的板塊中選擇點數，並依點數移動步數。</div>
+      <div class="hint" id="hint">黑方先手：請點選任一黑方棋子以放置焦點</div>
     </div>
 
     <div class="card right">
       <div class="header">
         <h1>對局設定</h1>
-        <div class="sub">玩家/隨機/AI · 棋盤固定 4×4 草綠格</div>
+        <div class="sub">玩家/隨機/AI、棋盤設置（標準/隨機/相同）</div>
       </div>
       <div class="panel">
         <div class="grid2">
           <div class="row">
-            <label>紅方（先手）</label>
-            <select id="redType">
+            <label>黑方（先手）</label>
+            <select id="blackType">
               <option value="human" selected>玩家</option>
               <option value="random">隨機</option>
               <option value="ai">AI</option>
             </select>
           </div>
           <div class="row">
-            <label>藍方（後手）</label>
-            <select id="blueType">
+            <label>白方（後手）</label>
+            <select id="whiteType">
               <option value="human">玩家</option>
               <option value="random">隨機</option>
               <option value="ai" selected>AI</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>棋盤設置</label>
+            <select id="opening">
+              <option value="standard" selected>標準</option>
+              <option value="random">隨機</option>
+              <option value="same">相同</option>
             </select>
           </div>
           <div class="row nowrap">
@@ -235,7 +170,7 @@
         <div class="sep"></div>
         <div class="row" style="gap:10px; justify-content:space-between">
           <button class="primary" id="btnStart">開始新對局</button>
-          <button class="ghost" onclick="window.location='index.html'">返回主頁</button>
+          <button class="ghost" id="btnReset" onclick="window.location='index.html'">返回主頁</button>
         </div>
       </div>
 
@@ -247,54 +182,30 @@
       </div>
       <div class="tabwrap">
         <div class="log" id="log"></div>
-
         <div class="rules" id="rules" style="display:none">
           <h3 style="margin:0 0 8px">遊戲規則</h3>
           <ol style="margin:0 0 8px 18px; padding:0">
-            <li>棋盤為 4×4；每位玩家：森靈×1（三角）、信徒×9（實心圓）、鳥居×4（空心圓）、行動板塊 1/2/3。</li>
-            <li>起始：紅森靈放置在 (2,2)，藍森靈放置在 (3,3)。紅方先手，紅色「2」板塊翻至已使用面。</li>
-            <li>每回合包含四步驟：
-              <ul>
-                <li><b>1. 選行動板塊：</b>從尚未使用的行動板塊中選擇 1 張，翻至已使用面；數字表示必須移動的步數。</li>
-                <li><b>2. 移動森靈：</b>森靈只能上下左右移動，不能斜走；若遇到對手所在的行或列，必須整條「跳過」；同一回合不可重訪格子或回到起點。</li>
-                <li><b>3. 放置信徒：</b>在本回合停留過的格子（不含起點與被跳過格）放置或替換自己的信徒；鳥居所在格不放置。</li>
-                <li><b>4. 建造鳥居：</b>若形成橫列或直列 4 格信徒，立即選擇其中 1 格建立鳥居；該線其他未受保護的信徒放置回供應區。</li>
-              </ul>
+            <li>黑方先手，需先把<b>紫色焦點棋</b>放在自己的任一棋子上，開始遊戲</li>
+            <li><b>回合行動</b>：
+                  <ul style="margin:8px 0 8px 16px; padding:0">
+                    <li>擁有焦點棋的棋為本回合<b>必須移動</b>的棋子。</li>
+                    <li>上下左右滑行至任一<b>空格</b>。</li>
+                    <li>不可對角、不可跨越、停在任何棋子上。</li>
+                    <li>移動後依落點<b>格色</b>，焦點棋將換到<b>對手相同顏色</b>的棋子上，並輪到對手行動。</li>
+                  </ul>
             </li>
-            <li>勝利條件：
-              <ul>
-                <li>若場上同時有 9 枚己方信徒，立即獲勝。</li>
-                <li>若已建成 4 座己方鳥居，立即獲勝。</li>
-              </ul>
+            <li><b>勝利條件</b>:
+                  <ul style="margin:8px 0 8px 16px; padding:0">
+                    <li>輪到對手時若被指定之棋<b>無合法步</b> → 你獲得勝利。</li>
+                  </ul>
             </li>
-            <li>若三張行動板塊都已使用，該玩家回合結束後重置為可用。</li>
-            <li>特例：若同時形成多條直線可依序選擇建造順序。</li>
-            <li>備註：此版本為沒有森靈能力的基礎版本。</li>
           </ol>
         </div>
-
         <div class="rules" id="about" style="display:none">
           <h3 style="margin:0 0 8px">遊戲介紹</h3>
-          <p>
-            Torii 跳躍森靈 是一款雙人棋遊戲。玩家操縱神靈在棋盤上跳躍嬉戲，Torii（日文鳥居）象徵神域門戶，也是森靈的遊樂場！  
-            兩個神靈永不在同一條直線，因此必須穿梭跳躍、散播信徒並建造鳥居。當你率先蓋好 4 座鳥居，或在棋盤上散播滿 9 枚信徒時，即刻獲勝！
-          </p>
-
-          <h3 style="margin:12px 0 6px">遊戲設計</h3>
-          <p>
-            <strong>kolordeep 深顏色工作室 - 陳致寬 Kuan Chen</strong><br>
-            熱愛抽象棋的臺灣原創桌遊設計團隊，設計作品包括《攻鎖棋》、《疫途》、《跳躍森靈》、《Dragonarium》等，持續努力中！<br>
-            臉書粉專：<a href="https://www.facebook.com/kolordeepboardgamestudio/" target="_blank">kolordeep boardgame studio</a>
-          </p>
-
-          <h3 style="margin:12px 0 6px">遊戲出版</h3>
-          <p>
-            <strong>桌遊愛樂事 EmperorS4</strong><br>
-            成立於 2013 年，是台灣最具代表性的原創桌遊出版品牌之一。致力於創作具有文化深度與國際吸引力的桌遊產品，讓每一位玩家都能在其中獲得樂趣、連結與啟發。代表作品如《花見小路》《彩色島》《馭利交易者》《跳躍森靈》。<br>
-            臉書粉專：<a href="https://www.facebook.com/EmperorS4" target="_blank">EmperorS4 Facebook</a><br>
-            官方網頁：<a href="https://tw.emperors4.com/" target="_blank">https://tw.emperors4.com/</a>
-          </p>
-          </div>
+          <p>四色棋是由我自己(奧羅)設計的抽象棋類遊戲，也因為此遊戲可以自己跟自己對弈，因此我又稱之為邊緣棋。四色棋是我設計的第一個雙人棋類遊戲，雖然難以商業化，但是我個人非常喜歡這樣簡單乾淨的規則，同時此遊戲也是引導我開始製作機器學習與網頁設計的契機。</p>
+          <p>關於此遊戲更多介紹：<a href="https://www.instagram.com/p/B5bsCvqla9f/?igsh=dGlyZndjbzR6ZGR3" target="_blank" rel="noopener">四色棋IG介紹貼文</a></p>
+        </div>
       </div>
 
       <div class="footer">奧羅桌遊設計工作室 · 程式練習作品</div>
@@ -302,271 +213,213 @@
   </div>
 
   <script>
-    // 工具
-    function wait(ms){ return new Promise(r=>setTimeout(r, ms)); }
-    function centerOfCell(r, c) {
-      const ce = cellEl(r,c);
-      const br = ce.getBoundingClientRect();
-      const pr = elBoard.getBoundingClientRect();
-      return { x: br.left-pr.left + br.width/2, y: br.top-pr.top + br.height/2, size: br.width };
-    }
-    function makeSpiritGhost(ownerClass) {
-      const g = document.createElement('div');
-      g.className = `spirit-ghost ${ownerClass}`;
-      return g;
-    }
-
-    /* ========= 狀態與規則（不變） ========= */
-    class ToriiGame {
-      constructor(){
+    // ========== 核心規則引擎 ==========
+    class FourColorChess {
+      constructor(pattern){
         this.rows=4; this.cols=4;
-        this.spirit = { R:{r:1,c:1}, B:{r:2,c:2} };
-        this.followers = Array.from({length:4},()=>Array(4).fill(null));
-        this.torii = Array.from({length:4},()=>Array(4).fill(null));
-        this.turn='R';
-        this.tilesUsed = { R:{1:false,2:true,3:false}, B:{1:false,2:false,3:false} };
-        this.pendingTile = null;
-        this.pendingPath = [];
-        this.stepRemain = 0;
-        this.building = false;
-        this.buildChoices = [];
-        this.ended=false; this._winner=null;
-      }
-      opp(s){ return s==='R'?'B':'R'; }
-      inBounds(r,c){ return r>=0 && r<4 && c>=0 && c<4; }
-      countFollowers(side){ let n=0; for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(this.followers[r][c]===side) n++; return n; }
-      countTorii(side){ let n=0; for(let r=0;r<4;r++) for(let c=0;c<4;c++) if(this.torii[r][c]===side) n++; return n; }
-      availableTiles(side){ const u=this.tilesUsed[side]; return [1,2,3].filter(k=>!u[k]); }
-      startWithTile(k){ this.pendingTile=k; this.stepRemain=k; this.pendingPath=[]; }
-      currentPos(){ return this.spirit[this.turn]; }
-      visitedSet(start){ const s=new Set(); s.add(start.r+','+start.c); for(const p of this.pendingPath) s.add(p.r+','+p.c); return s; }
-      nextSteps(fromR, fromC){
-        const oppPos = this.spirit[this.opp(this.turn)];
-        const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
-        const out=[];
-        const start = this.spirit[this.turn];
-        const visited = this.visitedSet(start);
-        for(const [dr,dc] of dirs){
-          let r=fromR+dr, c=fromC+dc;
-          if(!this.inBounds(r,c)) continue;
-          if(r===oppPos.r || c===oppPos.c){ r+=dr; c+=dc; if(!this.inBounds(r,c)) continue; }
-          const key = r+','+c;
-          if(key===start.r+','+start.c) continue;
-          if(visited.has(key)) continue;
-          out.push({r,c});
-        }
-        return out;
-      }
-      enumeratePaths(k){
-        const start = this.spirit[this.turn];
-        const paths=[];
-        const dfs=(r,c,steps,leftPath,visited)=>{
-          if(steps===0){ paths.push(leftPath.slice()); return; }
-          const moves=this.nextSteps(r,c);
-          for(const m of moves){
-            const key=m.r+','+m.c;
-            if(visited.has(key)) continue;
-            visited.add(key);
-            leftPath.push({r:m.r,c:m.c});
-            dfs(m.r,m.c,steps-1,leftPath,visited);
-            leftPath.pop(); visited.delete(key);
-          }
-        };
-        const v=new Set([start.r+','+start.c]);
-        dfs(start.r,start.c,k,[],v);
-        return paths;
-      }
-      isTerminal(){ return this.ended; }
-      winner(){ return this._winner; }
-      fullLines(side){
-        const lines=[];
-        for(let r=0;r<4;r++){
-          let ok=true; for(let c=0;c<4;c++) if(this.followers[r][c]!==side) {ok=false; break;}
-          if(ok) lines.push({type:'row', r, cells:[{r,c:0},{r,c:1},{r,c:2},{r,c:3}]});
-        }
+        this.pattern = pattern || [
+          ["red","blue","yellow","green"],
+          ["blue","red","green","yellow"],
+          ["yellow","green","red","blue"],
+          ["green","yellow","blue","red"]
+        ];
+        this.pieces = { B:{}, W:{} };
+        const top=0, bottom=3;
         for(let c=0;c<4;c++){
-          let ok=true; for(let r=0;r<4;r++) if(this.followers[r][c]!==side) {ok=false; break;}
-          if(ok) lines.push({type:'col', c, cells:[{r:0,c},{r:1,c},{r:2,c},{r:3,c}]});
+          const colTop = this.pattern[top][c];
+          const colBot = this.pattern[bottom][c];
+          this.pieces.W[colTop] = {r:0, c};
+          this.pieces.B[colBot] = {r:3, c};
         }
-        return lines;
+        this.turn = 'B'; // 黑方先手
+        this.focus = null; // {owner:'B'|'W', color:'red|blue|yellow|green'}
       }
-      applyPath(path){
-        const side=this.turn, opp=this.opp(side);
-        const last = path[path.length-1];
-        this.spirit[side] = {r:last.r, c:last.c};
-        const seen=new Set(); const uniq=[];
-        for(const p of path){ const k=p.r+','+p.c; if(seen.has(k)) continue; seen.add(k); uniq.push(p); }
-        for(const p of uniq){
-          if(this.torii[p.r][p.c]) continue;
-          const cur=this.followers[p.r][p.c];
-          if(cur===null){ this.followers[p.r][p.c]=side; }
-          else if(cur===opp){ this.followers[p.r][p.c]=side; }
-        }
-        if(this.countFollowers(side) >= 9){ this.ended=true; this._winner=side; return {needBuild:false}; }
-        const lines=this.fullLines(side);
-        if(lines.length>0){
-          this.building = true;
-          const cand=[];
-          for(const ln of lines){
-            for(const p of ln.cells){
-              if(!this.torii[p.r][p.c] && this.followers[p.r][p.c]===side){
-                cand.push(p);
-              }
-            }
+      cellColor(r,c){ return this.pattern[r][c]; }
+      inBounds(r,c){ return r>=0 && r<4 && c>=0 && c<4; }
+      occupiedAt(r,c){
+        for(const s of ['B','W']){
+          for(const col of ['red','blue','yellow','green']){
+            const p = this.pieces[s][col];
+            if(p && p.r===r && p.c===c) return {side:s, color:col};
           }
-          const map=new Map();
-          for(const p of cand){ map.set(p.r+','+p.c, p); }
-          this.buildChoices = Array.from(map.values());
-          return {needBuild:true};
         }
-        this.endTurnFlipAndPass(side);
-        return {needBuild:false};
+        return null;
       }
-      endTurnFlipAndPass(side){
-        this.tilesUsed[side][this.pendingTile] = true;
-        if(this.tilesUsed[side][1] && this.tilesUsed[side][2] && this.tilesUsed[side][3]){
-          this.tilesUsed[side] = {1:false,2:false,3:false};
-        }
-        this.pendingTile=null; this.pendingPath=[]; this.stepRemain=0;
-        this.turn = this.opp(side);
+      pieceOf(owner,color){ return this.pieces[owner][color] || null; }
+
+      tryPlaceInitialFocusOn(owner,color){
+        if(this.focus) return false;
+        if(this.turn!=='B') return false;
+        if(owner!=='B') return false;
+        const p = this.pieceOf(owner,color);
+        return !!p ? (this.focus={owner,color}, true) : false;
       }
-      buildToriiAt(r,c){
-        const side=this.turn;
-        const lines=this.fullLines(side);
-        const containing = lines.find(ln => ln.cells.some(p=>p.r===r && p.c===c));
-        if(!containing) return false;
-        if(this.torii[r][c]) return false;
-        this.torii[r][c]=side;
-        for(const p of containing.cells){
-          if(p.r===r && p.c===c) continue;
-          if(this.torii[p.r][p.c]) continue;
-          this.followers[p.r][p.c]=null;
-        }
-        if(this.countTorii(side) >= 4){ this.ended=true; this._winner=side; this.building=false; this.buildChoices=[]; return true; }
-        const more=this.fullLines(side);
-        if(more.length>0){
-          const cand=[];
-          for(const ln of more){
-            for(const p of ln.cells){
-              if(!this.torii[p.r][p.c] && this.followers[p.r][p.c]===side){
-                cand.push(p);
-              }
-            }
+
+      legalMovesOf(owner,color){
+        const p = this.pieceOf(owner,color);
+        if(!p) return [];
+        const res=[];
+        const dirs=[[1,0],[-1,0],[0,1],[0,-1]];
+        for(const [dr,dc] of dirs){
+          let r=p.r+dr, c=p.c+dc;
+          while(this.inBounds(r,c)){
+            if(this.occupiedAt(r,c)) break; // 不能越子/停在子上
+            res.push([r,c]);
+            r+=dr; c+=dc;
           }
-          const map=new Map(); for(const p of cand){ map.set(p.r+','+p.c, p); }
-          this.buildChoices = Array.from(map.values());
-          this.building = true;
-        }else{
-          this.building=false; this.buildChoices=[];
-          this.endTurnFlipAndPass(side);
         }
-        return true;
+        return res;
       }
-      step(action){
-        const g=this.clone();
-        if(action.type==='chooseTile'){ g.startWithTile(action.k); return g; }
-        if(action.type==='movePath'){ 
-          const res=g.applyPath(action.path); 
-          if(res.needBuild && g.buildChoices.length){
-            const p=g.buildChoices[0]; g.buildToriiAt(p.r,p.c);
-          }
-          return g; 
-        }
-        return g;
+      legalMovesForFocus(){
+        if(!this.focus) return [];
+        if(this.focus.owner!==this.turn) return [];
+        return this.legalMovesOf(this.focus.owner, this.focus.color);
       }
+
+      isTerminal(){
+        if(!this.focus) return false; // 未放焦點不算終局
+        if(this.focus.owner!==this.turn) return false;
+        return this.legalMovesForFocus().length===0;
+      }
+      winner(){
+        if(!this.isTerminal()) return null;
+        return this.turn==='B' ? 'W' : 'B';
+      }
+
+      applyMove(dest){
+        if(!this.focus || this.focus.owner!==this.turn) throw new Error('不是該焦點/該回合');
+        const legals = this.legalMovesForFocus().map(rc=>rc.join(','));
+        if(!legals.includes(dest.join(','))) throw new Error('非法落點');
+        const mover = this.pieceOf(this.focus.owner, this.focus.color);
+        mover.r = dest[0]; mover.c = dest[1];
+        const nextOwner = (this.turn==='B'?'W':'B');
+        const landedColor = this.cellColor(dest[0], dest[1]);
+        this.turn = nextOwner;
+        this.focus = { owner: nextOwner, color: landedColor };
+      }
+
       clone(){
-        const g = new ToriiGame();
-        g.spirit = { R:{...this.spirit.R}, B:{...this.spirit.B} };
-        g.followers = this.followers.map(row=>row.slice());
-        g.torii = this.torii.map(row=>row.slice());
-        g.turn = this.turn;
-        g.tilesUsed = { R:{...this.tilesUsed.R}, B:{...this.tilesUsed.B} };
-        g.pendingTile = this.pendingTile;
-        g.pendingPath = this.pendingPath.map(p=>({r:p.r,c:p.c}));
-        g.stepRemain = this.stepRemain;
-        g.building = this.building;
-        g.buildChoices = this.buildChoices.map(p=>({r:p.r,c:p.c}));
-        g.ended = this.ended; g._winner=this._winner;
-        return g;
+        const cp = new FourColorChess(this.pattern.map(row=>row.slice()));
+        cp.turn = this.turn;
+        cp.focus = this.focus ? {...this.focus} : null;
+        for(const s of ['B','W']){
+          for(const col of ['red','blue','yellow','green']){
+            cp.pieces[s][col] = {...this.pieces[s][col]};
+          }
+        }
+        return cp;
       }
     }
+    
 
-    /* ========= MCTS（不變） ========= */
+    // ========== 產生隨機四色拉丁矩陣 ==========
+    function shuffle(arr){ for(let i=arr.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [arr[i],arr[j]]=[arr[j],arr[i]]; } return arr; }
+    function makeRandomLatin(){
+      const colors=['red','blue','yellow','green'];
+      const sym = shuffle(colors.slice());
+      // 基本循環方陣
+      const base=[
+        [sym[0],sym[1],sym[2],sym[3]],
+        [sym[1],sym[2],sym[3],sym[0]],
+        [sym[2],sym[3],sym[0],sym[1]],
+        [sym[3],sym[0],sym[1],sym[2]]
+      ];
+      // 隨機打亂列與欄的順序（保持拉丁性）
+      const rp = shuffle([0,1,2,3]);
+      const cp = shuffle([0,1,2,3]);
+      const out=[ [null,null,null,null],[null,null,null,null],[null,null,null,null],[null,null,null,null] ];
+      for(let i=0;i<4;i++) for(let j=0;j<4;j++) out[rp[i]][cp[j]] = base[i][j];
+      return out;
+    }
+
+    // ========== MCTS ==========
     class MCTS {
       constructor({iterations=1500, c=Math.SQRT2}={}){ this.iterations=iterations; this.c=c; }
       actions(state){
-        if(state.isTerminal()) return [];
-        if(state.pendingTile===null){
-          const ks = state.availableTiles(state.turn);
-          return ks.map(k=>({type:'chooseTile', k}));
+        if(!state.focus && state.turn==='B'){
+          const colors=['red','blue','yellow','green'];
+          const choices=[];
+          for(const col of colors){
+            const p = state.pieceOf('B',col);
+            if(!p) continue;
+            const tmp = state.clone();
+            tmp.tryPlaceInitialFocusOn('B',col);
+            if(tmp.legalMovesForFocus().length>0) choices.push({type:'placeFocus', color:col});
+          }
+          return choices;
         }
-        const paths = state.enumeratePaths(state.stepRemain||state.pendingTile);
-        return paths.map(p=>({type:'movePath', path:p}));
+        return state.legalMovesForFocus().map(rc=>({type:'move', dest:rc}));
+      }
+      step(state, action){
+        const s = state.clone();
+        if(action.type==='placeFocus'){ s.tryPlaceInitialFocusOn('B', action.color); return s; }
+        s.applyMove(action.dest); return s;
       }
       rollout(state, rootPlayer, limit=60){
-        let s=state.clone(); let steps=0;
-        while(steps<limit && !s.isTerminal()){
-          const acts=this.actions(s);
+        let s = state.clone(); let steps=0;
+        while(steps<limit){
+          if(s.isTerminal()) break;
+          const acts = this.actions(s);
           if(acts.length===0) break;
-          const a=acts[Math.floor(Math.random()*acts.length)];
-          s = s.step(a);
-          steps++;
+          const a = acts[Math.floor(Math.random()*acts.length)];
+          s = this.step(s, a); steps++;
         }
-        if(s.isTerminal()){
-          const w=s.winner(); if(!w) return 0.5;
-          return (w===rootPlayer?1:0);
-        }
-        return 0.5;
+        const w = s.winner(); if(!w) return 0.5; return (w===rootPlayer?1:0);
       }
       uctSelect(node, rootPlayer){
-        let best=null, bestScore=-1e9;
-        const isRootTurn = node.state.turn===rootPlayer;
+        let best = null;
+        let bestScore = -Infinity;
+        const isRootPlayer = node.state.turn === rootPlayer;
         for(const ch of node.children){
-          const q = ch.value/Math.max(1,ch.visits);
-          const exploit = isRootTurn ? q : (1-q);
-          const explore = this.c * Math.sqrt(Math.log(Math.max(1,node.visits)) / Math.max(1,ch.visits));
-          const score = exploit + explore;
-          if(score>bestScore){ best=ch; bestScore=score; }
+          const q = ch.value / Math.max(1,ch.visits);
+          const exploit = isRootPlayer ? q : (1 - q);
+          const u = this.c * Math.sqrt(Math.log(Math.max(1,node.visits)) / Math.max(1,ch.visits));
+          const score = exploit + u;
+          if(score > bestScore){
+            bestScore = score;
+            best = ch;
+          }
         }
         return best;
       }
       choose(state){
-        const root={state:state.clone(), parent:null, action:null, children:[], unexpanded:this.actions(state), visits:0, value:0};
-        const rootPlayer=state.turn;
+        const root = {state:state.clone(), parent:null, action:null, children:[], unexpanded:this.actions(state), visits:0, value:0};
+        const rootPlayer = state.turn;
         if(root.unexpanded.length===0 && root.children.length===0) return null;
         for(let i=0;i<this.iterations;i++){
           let node=root;
-          while(node.unexpanded.length===0 && node.children.length>0){ node=this.uctSelect(node, rootPlayer); }
+          while(node.unexpanded.length===0 && node.children.length>0){ node = this.uctSelect(node, rootPlayer); }
           if(node.unexpanded.length>0){
-            const idx=Math.floor(Math.random()*node.unexpanded.length);
-            const action=node.unexpanded.splice(idx,1)[0];
-            const nextState = node.state.step(action);
-            const child={state:nextState, parent:node, action, children:[], unexpanded:this.actions(nextState), visits:0, value:0};
+            const idx = Math.floor(Math.random()*node.unexpanded.length);
+            const action = node.unexpanded.splice(idx,1)[0];
+            const nextState = this.step(node.state, action);
+            const child = {state:nextState, parent:node, action, children:[], unexpanded:this.actions(nextState), visits:0, value:0};
             node.children.push(child); node=child;
           }
-          const reward=this.rollout(node.state, rootPlayer);
-          while(node){ node.visits++; node.value += reward; node=node.parent; }
+          const reward = this.rollout(node.state, rootPlayer);
+          while(node){ node.visits++; node.value += reward; node = node.parent; }
         }
         if(root.children.length===0) return null;
         root.children.sort((a,b)=>b.visits-a.visits);
-        const best=root.children[0];
-        const winrate = best.visits>0 ? (best.value/best.visits) : 0.5;
+        const best = root.children[0];
+        let winrate = 0;
+        if (best.visits > 0) {
+          winrate = best.value / best.visits;
+        }
         return {...best.action, winrate};
       }
     }
 
-    /* ========= UI ========= */
+    // ========== UI ==========
     const elBoard = document.getElementById('board');
     const elLog   = document.getElementById('log');
     const elHint  = document.getElementById('hint');
-    const tilesR  = document.getElementById('tilesR');
-    const tilesB  = document.getElementById('tilesB');
-    const supR = document.getElementById('supR'); const supB = document.getElementById('supB');
-    const torR = document.getElementById('torR'); const torB = document.getElementById('torB');
-    const redTypeSel = document.getElementById('redType');
-    const blueTypeSel = document.getElementById('blueType');
-    const itersInput = document.getElementById('iters');
-    const btnStart   = document.getElementById('btnStart');
+    const blackTypeSel = document.getElementById('blackType');
+    const whiteTypeSel = document.getElementById('whiteType');
+    const openingSel   = document.getElementById('opening');
+    const itersInput   = document.getElementById('iters');
+    const btnStart = document.getElementById('btnStart');
+    const btnReset = document.getElementById('btnReset');
 
     document.querySelectorAll('.tabs .tab').forEach(btn=>{
       btn.addEventListener('click', ()=>{
@@ -577,382 +430,250 @@
       });
     });
 
-    let G=null, M=null; let waitingHuman=false; let legalNow=[]; let buildSet=new Set(); let stepCount=0;
+let G=null, M=null; let waitingHuman=false; let legalNow=[]; let initialPatternSnapshot=null;
+let stepCount = 0; // 步數計數
 
-    function logLine(html){ const p=document.createElement('p'); p.innerHTML=html; elLog.appendChild(p); elLog.scrollTop=elLog.scrollHeight; }
-    function playerLabel(id){ return id==='R' ? '紅方' : '藍方'; }
-    function setHint(){
+function logLine(html){ const p=document.createElement('p'); p.innerHTML=html; elLog.appendChild(p); elLog.scrollTop=elLog.scrollHeight; }
+function playerLabel(id){ return id==='B' ? '黑方' : '白方'; }
+function colorZh(c){ return ({red:'紅',blue:'藍',yellow:'黃',green:'綠'})[c] || c; }
+
+function logStepHeader() {
+  if (!G || !G.focus) return;
+  logLine(`第${stepCount}步，現在輪到 ${playerLabel(G.turn)}${colorZh(G.focus.color)}棋移動`);
+  updateWinrateBar();
+}
+
+function setHint(){
       if(!G){ elHint.textContent=''; return; }
-      if(G.isTerminal()){ const w=G.winner(); elHint.textContent = `${playerLabel(w)}獲勝`; return; }
-      const role = (G.turn==='R'? redTypeSel.value : blueTypeSel.value);
-      if(G.building){
-        elHint.textContent = `${playerLabel(G.turn)}：請在完整直線中的一顆己方信徒上建鳥居`;
-      } else if(G.pendingTile===null){
-        elHint.textContent = `${playerLabel(G.turn)}：請選擇未使用的板塊（1/2/3）`;
-      } else {
-        elHint.textContent = `${playerLabel(G.turn)}：尚餘 ${G.stepRemain} 步，請依序點選落點`;
+      if(!G.focus && G.turn==='B'){ elHint.textContent = '黑方先手：請點選任一黑方棋子以放置焦點'; return; }
+      if(G.isTerminal()){
+        const w = G.winner(); const loser = (w==='B'?'白方':'黑方');
+        elHint.textContent = `${loser}無合法步，${playerLabel(w)}勝利`; return;
       }
+      const who = playerLabel(G.turn);
+      const fc = G.focus ? colorZh(G.focus.color) : '（未放焦點）';
+      const role = (G.turn==='B'? blackTypeSel.value : whiteTypeSel.value);
+      if(!G.focus && G.turn==='B'){ elHint.textContent = `黑方請先放焦點`; }
+      else if(role==='human'){ elHint.textContent = `${who}行動中，必須移動${fc}棋，請點擊高亮格移動`; }
+      else if(role==='ai'){ elHint.textContent = `${who} AI 思考中…`; }
+      else { elHint.textContent = `${who} 隨機 決定中…`; }
     }
 
-    function renderTiles(){
-      // 紅方
-      const redTilebox = tilesR.closest('.tilebox');
-      if (G.turn === 'R' && G.pendingTile === null) redTilebox.classList.add('active-tiles');
-      else redTilebox.classList.remove('active-tiles');
-      tilesR.innerHTML='';
-      [1,2,3].forEach(k=>{
-        const div=document.createElement('div');
-        div.className='tile red'+(G.tilesUsed.R[k]?' used':'')+((G.turn==='R' && G.pendingTile===k) ? ' selected':'');
-        div.textContent=k;
-        const isTurn = G.turn==='R';
-        const isHuman = redTypeSel.value==='human';
-        const canClick = isTurn && !G.building && G.pendingTile===null && !G.tilesUsed.R[k] && isHuman;
-        div.addEventListener('click', ()=>{
-          if(!canClick) return;
-          G.startWithTile(k);
-          // logStepHeader(); // 不再重複呼叫
-          logLine(`玩家選擇 行動板塊 <b>移動${k}步</b>`);
-          computeLegal(); renderAll();
-        });
-        tilesR.appendChild(div);
-      });
-      // 藍方
-      const blueTilebox = tilesB.closest('.tilebox');
-      if (G.turn === 'B' && G.pendingTile === null) blueTilebox.classList.add('active-tiles');
-      else blueTilebox.classList.remove('active-tiles');
-      tilesB.innerHTML='';
-      [1,2,3].forEach(k=>{
-        const div=document.createElement('div');
-        div.className='tile blue'+(G.tilesUsed.B[k]?' used':'')+((G.turn==='B' && G.pendingTile===k) ? ' selected':'');
-        div.textContent=k;
-        const isTurn = G.turn==='B';
-        const isHuman = blueTypeSel.value==='human';
-        const canClick = isTurn && !G.building && G.pendingTile===null && !G.tilesUsed.B[k] && isHuman;
-        div.addEventListener('click', ()=>{
-          if(!canClick) return;
-          G.startWithTile(k);
-          logStepHeader(k);
-          logLine(`玩家選擇 行動板塊 <b>${k}</b>`);
-          computeLegal(); renderAll();
-        });
-        tilesB.appendChild(div);
-      });
-    }
-
-    function cellEl(r,c){ return elBoard.children[r*4 + c]; }
-
-    /* 顯示用精靈位置（不動規則狀態） */
-    function getDisplayedSpiritPos(side){
-      if(!G) return null;
-      if(G.turn===side && G.pendingTile!==null && G.pendingPath.length>0){
-        return G.pendingPath[G.pendingPath.length-1];
+    function pieceNode(occ){
+      const piece = document.createElement('div');
+      piece.className = `piece ${occ.side==='B'?'ownerB':'ownerW'} p-${occ.color}`; // 直接填色
+      if(G.focus && G.focus.owner===occ.side && G.focus.color===occ.color){
+        const f = document.createElement('div'); f.className='focus-dot'; piece.appendChild(f);
       }
-      return G.spirit[side];
+      return piece;
     }
 
-    function renderBoard(){
+    function render(){
       elBoard.innerHTML='';
+      const legalSet = new Set(legalNow.map(rc=>rc.join(',')));
       for(let r=0;r<4;r++){
         for(let c=0;c<4;c++){
-          const d=document.createElement('div');
-          d.className='cell';
-          const isLegalMove = legalNow.some(p=>p.r===r && p.c===c);
-          const isBuildChoice = buildSet.has(r+','+c);
-          if(isLegalMove || isBuildChoice) d.classList.add('legal');
+          const col = G.cellColor(r,c);
+          const d = document.createElement('div');
+          d.className = `cell c-${col}`;
+          if(legalSet.has([r,c].join(','))) d.classList.add('legal');
 
-          const fol = G.followers[r][c];
-          if(fol){ const t=document.createElement('div'); t.className='token follower '+fol; d.appendChild(t); }
-          const tor = G.torii[r][c];
-          if(tor){ const ring=document.createElement('div'); ring.className='torii '+tor; d.appendChild(ring); }
-
-          const rPos=getDisplayedSpiritPos('R');
-          const bPos=getDisplayedSpiritPos('B');
-          if(rPos.r===r && rPos.c===c){ const s=document.createElement('div'); s.className='spirit R'; d.appendChild(s); }
-          if(bPos.r===r && bPos.c===c){ const s=document.createElement('div'); s.className='spirit B'; d.appendChild(s); }
+          const occ = G.occupiedAt(r,c);
+          if(occ){
+            d.appendChild(pieceNode(occ));
+            d.addEventListener('click', ()=>{
+              if(G.turn==='B' && !G.focus){
+                if(occ.side!=='B') return;
+                if(!G.tryPlaceInitialFocusOn('B', occ.color)) return;
+                logLine(`黑方放置焦點於 <b>黑方${colorZh(occ.color)}棋</b>`);
+                computeLegal(); render(); maybeAuto();
+              }
+            });
+          }
 
           d.addEventListener('click', ()=>{
-            if(G.isTerminal()) return;
-            if(G.building){
-              const key=r+','+c;
-              const humanTurn = (G.turn==='R'? redTypeSel.value : blueTypeSel.value)==='human';
-              if(!humanTurn) return;
-              if(!buildSet.has(key)) return;
-              const ok = G.buildToriiAt(r,c);
-              if(ok){
-                logLine(`在 (${r+1}, ${c+1}) 建立鳥居`);
-                if(G.isTerminal()){ logLine(`<b>${playerLabel(G.winner())}達成勝利條件（4 座鳥居）</b>`); }
-                computeLegal(); renderAll();
-                if(!G.building && !G.isTerminal()){ maybeAuto(); }
-              }
-              return;
-            }
-            if(!waitingHuman) return;
-            if(G.pendingTile===null) return;
-            const legal = legalNow.some(p=>p.r===r && p.c===c);
-            if(!legal) return;
-            humanStep({r,c});
+            if(!waitingHuman) return; const key=[r,c].join(','); if(!legalSet.has(key)) return; waitingHuman=false; doMove([r,c]);
           });
 
           const coord=document.createElement('div'); coord.className='coords'; coord.textContent=`${r+1},${c+1}`; d.appendChild(coord);
           elBoard.appendChild(d);
         }
       }
-    }
-
-    function updateSupplyUI(){
-      const rFol=G.countFollowers('R'), bFol=G.countFollowers('B');
-      const rTor=G.countTorii('R'), bTor=G.countTorii('B');
-      supR.textContent = `${rFol}/9`; supB.textContent = `${bFol}/9`;
-      torR.textContent = `${rTor}/4`;  torB.textContent = `${bTor}/4`;
-    }
-
-    function computeLegal(){
-      legalNow=[];
-      buildSet.clear();
-      if(G.building){
-        for(const p of G.buildChoices){ buildSet.add(p.r+','+p.c); }
-        return;
-      }
-      if(G.pendingTile!==null && G.stepRemain>0){
-        const pos = G.pendingPath.length ? G.pendingPath[G.pendingPath.length-1] : G.currentPos();
-        legalNow = G.nextSteps(pos.r, pos.c);
-      }
-    }
-
-    function logStepHeader(){
-      const n = stepCount+1;
-      const who = G.turn==='R'
-        ? '<b class="${cls}"><span style="color:#f87171">紅方回合</span></b>'
-        : '<b class="${cls}"><span style="color:#60a5fa">藍方回合</span></b>';
-      logLine(`第${n}步，現在輪到 ${who}`);
-    }
-
-    /* === 顯示層動畫 === */
-    let _animating=false;
-    async function animateStep(side, from, to, restore=true, keepGhost=false){
-      const start=centerOfCell(from.r,from.c);
-      const end=centerOfCell(to.r,to.c);
-      const ghost=makeSpiritGhost(side);
-      ghost.style.transform=`translate(${start.x}px, ${start.y}px) translate(-50%,-60%)`;
-      elBoard.appendChild(ghost);
-
-      const hidePos=getDisplayedSpiritPos(side);
-      const hideCell=cellEl(hidePos.r, hidePos.c);
-      const hideEl=hideCell? hideCell.querySelector('.spirit.'+side):null;
-      if(hideEl) hideEl.style.opacity='0';
-
-      await new Promise(requestAnimationFrame);
-      ghost.style.transform=`translate(${end.x}px, ${end.y}px) translate(-50%,-60%)`;
-      await wait(300);
-
-      // keepGhost: 保留在畫面上，交給呼叫端在重繪後移除，避免看到空檔
-      if(!keepGhost){
-        ghost.remove();
-        if(restore && hideEl) hideEl.style.opacity='';
-        return null;
-      }else{
-        if(restore && hideEl) hideEl.style.opacity='';
-        return ghost;
-      }
-    }
-
-    // 供 AI/隨機使用：依序播放整條路徑（最後一步保留幽靈，回傳它）
-    async function animateAIPath(side, path){
-      if(!path || !path.length) return null;
-      _animating = true;
-      let from = getDisplayedSpiritPos(side);
-      for(let i=1;i<=path.length;i++){
-        const to = path[i-1];
-        G.pendingPath = path.slice(0,i);
-        G.stepRemain = path.length-i;
-        renderAll();
-        await animateStep(side, from, to, true, false);
-        from = to;
-      }
-      _animating = false;
-      return null;
-    }
-
-    // 玩家一步一動（保持原本恢復）
-    async function humanStep(cell){
-      if(_animating) return;
-      const side=G.turn;
-      const from = getDisplayedSpiritPos(side);
-      const to   = cell;
-
-      _animating=true;
-      await animateStep(side, from, to, true, false);
-      _animating=false;
-
-      G.pendingPath.push(cell);
-      G.stepRemain--;
-      if(G.stepRemain>0){
-        computeLegal(); renderAll();
-        setHint(); return;
-      }
-      finalizeTurn(false, null, 'player', G.pendingPath.slice());
-    }
-
-    function summarizePath(path){
-      return path.map(p=>`(${p.r+1}, ${p.c+1})`).join(' → ');
-    }
-
-    function finalizeTurn(byAI=false, aiInfo=null, pathType=null, pathArg=null){
-      const path = pathArg || G.pendingPath;
-      const res = G.applyPath(path);
-      let who = '';
-      if(pathType==='ai') who = 'AI路徑：';
-      else if(pathType==='random') who = '隨機路徑：';
-      else who = '玩家路徑：';
-      if(byAI){
-        if(aiInfo && typeof aiInfo.winrate==='number'){
-          logLine(`${who}${summarizePath(path)} | <b>勝率${(aiInfo.winrate*100).toFixed(1)}%</b>`);
-        }else{
-          logLine(`${who}${summarizePath(path)}`);
-        }
-      }else{
-        logLine(`${who}${summarizePath(path)}`);
-      }
-
-      if(G.isTerminal()){
-        logLine(`<b>${playerLabel(G.winner())}達成勝利條件（9 枚信徒）</b>`);
-        stepCount++; computeLegal(); renderAll(); return;
-      }
-
-      if(res.needBuild){
-        logLine(`形成完整直線，請選擇要在哪顆信徒上建鳥居`);
-        computeLegal(); renderAll();
-        const role = (G.turn==='R'? redTypeSel.value : blueTypeSel.value);
-        if(role!=='human'){
-          setTimeout(()=>autoBuildPhase(role), 160);
-        }
-      }else{
-        stepCount++;
-        // 只在換手時呼叫 logStepHeader
-        logStepHeader();
-        computeLegal(); renderAll();
-        maybeAuto();
-      }
-    }
-
-    async function autoBuildPhase(role){
-      if(!G.building || G.isTerminal()) return;
-      await wait(400);
-      let pick=null;
-      if(role==='random'){
-        pick = G.buildChoices[Math.floor(Math.random()*G.buildChoices.length)];
-      }else{
-        pick = G.buildChoices[0];
-      }
-      if(pick){
-        G.buildToriiAt(pick.r, pick.c);
-        logLine(`AI在 (${pick.r+1}, ${pick.c+1}) 建立鳥居`);
-      }
-      computeLegal(); renderAll();
-      if(G.isTerminal()){
-        logLine(`<b>${playerLabel(G.winner())}達成勝利條件（4 座鳥居）</b>`);
-        return;
-      }
-      if(G.building){
-        await autoBuildPhase(role);
-      }else{
-        stepCount++;
-        maybeAuto();
-      }
-    }
-
-    function renderAll(){
-      renderTiles();
-      renderBoard();
-      updateSupplyUI();
       setHint();
+      updateWinrateBar();
     }
 
+    function computeLegal(){ if(!G.focus){ legalNow=[]; return; } legalNow = (G.turn===G.focus.owner) ? G.legalMovesForFocus() : []; }
+
+    function cellEl(r,c){ return elBoard.children[r*4 + c]; }
+    function centerOfCell(r,c){
+      const ce=cellEl(r,c);
+      const br=ce.getBoundingClientRect();
+      const pr=elBoard.getBoundingClientRect();
+      return { x: br.left-pr.left + br.width/2, y: br.top-pr.top + br.height/2, size: br.width*0.76 };
+    }
+    function makeGhost(owner, color, withFocus){
+      const div=document.createElement('div');
+      div.className=`piece ${owner==='B'?'ownerB':'ownerW'} p-${color}`; // 幽靈同樣直接填色
+      if(withFocus){ const f=document.createElement('div'); f.className='focus-dot'; div.appendChild(f); }
+      div.style.position='absolute'; div.style.inset='auto'; div.style.pointerEvents='none';
+      return div;
+    }
+    async function animateMoveFocus(dest){
+      if(!G || !G.focus) return;
+      const owner = G.focus.owner, color = G.focus.color;
+      const p = G.pieceOf(owner, color);
+      const start=[p.r,p.c];
+      const startCell = cellEl(start[0], start[1]);
+      const staticPiece = startCell.querySelector('.piece');
+
+      const s = centerOfCell(start[0], start[1]);
+      const d = centerOfCell(dest[0], dest[1]);
+      const ghost = makeGhost(owner, color, true);
+      ghost.style.width=ghost.style.height=s.size+'px';
+      ghost.style.transform=`translate(${s.x - s.size/2}px, ${s.y - s.size/2}px)`;
+      elBoard.appendChild(ghost);
+      if(staticPiece) staticPiece.style.opacity = 0.25;
+
+      await new Promise(r=>requestAnimationFrame(r));
+      ghost.style.transition='transform 260ms ease';
+      ghost.style.transform=`translate(${d.x - d.size/2}px, ${d.y - d.size/2}px)`;
+      await new Promise(r=>setTimeout(r, 260));
+
+      ghost.remove(); if(staticPiece) staticPiece.style.opacity='';
+    }
+
+async function doMove(dest, byAI = false, aiInfo = null){
+  try{
+    await animateMoveFocus(dest);   // 平滑動畫
+    G.applyMove(dest);              // 更新狀態
+  }catch(e){
+    logLine(`<span class="pill bad">非法：${e.message}</span>`);
+    waitingHuman=false; computeLegal(); render(); return;
+  }
+  stepCount++;
+  if (byAI) {
+    if (aiInfo && typeof aiInfo.winrate === 'number') {
+      logLine(`AI ${playerLabel(G.turn === 'B' ? 'W' : 'B')}選擇 (${dest[0]+1}, ${dest[1]+1}) ${colorZh(G.cellColor(dest[0],dest[1]))}格 | ${playerLabel(G.turn === 'B' ? 'W' : 'B')}勝率${(aiInfo.winrate*100).toFixed(1)}%`);
+    } else {
+      logLine(`AI選擇 (${dest[0]+1}, ${dest[1]+1}) ${colorZh(G.cellColor(dest[0],dest[1]))}格`);
+    }
+  } else {
+    logLine(`玩家選擇 (${dest[0]+1}, ${dest[1]+1}) ${colorZh(G.cellColor(dest[0],dest[1]))}格`);
+  }
+  logLine(`焦點切換至 ${playerLabel(G.turn)}${colorZh(G.focus.color)}棋`);
+  if(G.isTerminal()){
+    const w = G.winner();
+    const loser = (w==='B'?'白方':'黑方');
+    logLine(`${loser}無法合法移動，${playerLabel(w)}勝利`);
+    updateWinrateBar();
+    }
+  computeLegal(); render(); await maybeAuto();
+}
+
+    function logTurnHeader(){ const who = playerLabel(G.turn); const fc = G.focus ? colorZh(G.focus.color) : '未放焦點'; logLine(`— 現在輪到 ${who}回合（焦點：${fc}）—`); }
+
+async function maybeAuto(){
+  const role = (G.turn==='B'? blackTypeSel.value : whiteTypeSel.value);
+  setHint(); if(G.isTerminal()){ render(); return; }
+  if(role==='human'){
+    if(!G.focus && G.turn==='B'){ waitingHuman=false; computeLegal(); render(); return; }
+    computeLegal(); waitingHuman=true; render(); return;
+  }
+  logStepHeader();
+  if(role==='ai'){ logLine('AI正在思考中...'); }
+  await sleep(250);
+  if(!G.focus && G.turn==='B'){
+    const cols=['red','blue','yellow','green'];
+    const candidates = cols.filter(c=>{ const tmp=G.clone(); tmp.tryPlaceInitialFocusOn('B',c); return tmp.legalMovesForFocus().length>0; });
+    if(candidates.length===0){ logLine(`<span class="pill bad">黑方無可行焦點與著法，白方勝利</span>`); render(); return; }
+    let chooseCol;
+    if(role==='random'){ chooseCol = candidates[Math.floor(Math.random()*candidates.length)]; }
+    else { const act = chooseByMCTS(G); chooseCol = (act && act.type==='placeFocus')? act.color : candidates[0]; }
+    G.tryPlaceInitialFocusOn('B', chooseCol); logLine(`黑方放置焦點於 黑方${colorZh(chooseCol)}棋`);
+  }
+  let dest=null, aiInfo=null;
+  if(role==='random'){ const leg=G.legalMovesForFocus(); dest = leg[Math.floor(Math.random()*leg.length)]; }
+  else { 
+    const act = chooseByMCTS(G); 
+    if(act && act.type==='move') {
+      dest=act.dest;
+      if (role==='ai' && typeof act.winrate === 'number') aiInfo = {winrate: act.winrate};
+    }
+  }
+  if(!dest){ logLine(`<span class="pill bad">${playerLabel(G.turn)}無路可走</span>`); render(); return; }
+  await sleep(150); await doMove(dest, role==='ai', aiInfo);
+}
+
+    function chooseByMCTS(state){ const m = M || (M=new MCTS({iterations: Math.max(200, Number(itersInput.value)||2000)})); m.iterations = Math.max(200, Number(itersInput.value)||2000); return m.choose(state); }
     function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
-    function chooseByMCTS(state){
-      const m = M || (M=new MCTS({iterations: Math.max(200, Number(itersInput.value)||2000)}));
-      m.iterations = Math.max(200, Number(itersInput.value)||2000);
-      return m.choose(state);
+
+function startGame(){
+  elLog.innerHTML=''; M=null; waitingHuman=false; legalNow=[]; stepCount = 0;
+  // 依棋盤設置建立 pattern
+  const mode = openingSel.value;
+  let pattern;
+  if(mode==='standard'){
+    pattern = [
+      ["red","blue","yellow","green"],
+      ["blue","red","green","yellow"],
+      ["yellow","green","red","blue"],
+      ["green","yellow","blue","red"]
+    ];
+  }else if(mode==='random'){
+    pattern = makeRandomLatin();
+  }else{ // same
+    if(initialPatternSnapshot) pattern = initialPatternSnapshot.map(row=>row.slice());
+    else {
+      pattern = [
+        ["red","blue","yellow","green"],
+        ["blue","red","green","yellow"],
+        ["yellow","green","red","blue"],
+        ["green","yellow","blue","red"]
+      ];
+      logLine('<span class="pill">首次使用「相同」時無快照，已改用標準棋盤</span>');
     }
-
-    async function maybeAuto(){
-      if(G.isTerminal()) return;
-
-      if(G.building){
-        const role = (G.turn==='R'? redTypeSel.value : blueTypeSel.value);
-        if(role==='human'){
-          waitingHuman=true; computeLegal(); renderAll(); return;
-        }
-        autoBuildPhase(role);
-        return;
-      }
-
-      const role = (G.turn==='R'? redTypeSel.value : blueTypeSel.value);
-      if(role==='human'){
-        waitingHuman = true;
-        computeLegal(); renderAll();
-        return;
-      }
-
-      waitingHuman=false;
-      // logStepHeader(); // 不再重複呼叫
-      if(role==='ai'){ logLine('AI正在思考中...'); }
-
-      await sleep(200);
-
-      // 若未選板塊：先選
-      if(G.pendingTile===null){
-        let k=null;
-        if(role==='random'){
-          const ks=G.availableTiles(G.turn);
-          k = ks[Math.floor(Math.random()*ks.length)];
-        }else{
-          const act=chooseByMCTS(G);
-          if(act && act.type==='chooseTile') k=act.k;
-          else{
-            const ks=G.availableTiles(G.turn);
-            k = ks[Math.floor(Math.random()*ks.length)];
-          }
-        }
-        G.startWithTile(k);
-        if(role==='ai') logLine(`AI選擇 行動板塊 <b>移動${k}步</b>`);
-        else            logLine(`隨機選擇 行動板塊 <b>移動${k}步</b>`);
-      }
-
-      // 選完整路徑
-      let path=null, info=null;
-      if(role==='random'){
-        const paths = G.enumeratePaths(G.stepRemain||G.pendingTile);
-        if(paths.length===0){ logLine(`<span class="pill bad">${playerLabel(G.turn)}無路可走（路徑為空）</span>`); return; }
-        path = paths[Math.floor(Math.random()*paths.length)];
-      }else{
-        const act=chooseByMCTS(G);
-        if(act && act.type==='movePath'){ path=act.path; info={winrate:act.winrate}; }
-        else{
-          const paths = G.enumeratePaths(G.stepRemain||G.pendingTile);
-          if(paths.length===0){ logLine(`<span class="pill bad">${playerLabel(G.turn)}無路可走（路徑為空）</span>`); return; }
-          path = paths[0];
-        }
-      }
-
-      // 逐步動畫：最後一步保留幽靈，重繪後再移除，避免收尾瞬間消失
-      await animateAIPath(G.turn, path);
-
-      await sleep(160);
-      finalizeTurn(role==='ai', info, role==='random'?'random':'ai', path);
-      renderAll();
-    }
-
-    function startGame(){
-      elLog.innerHTML=''; M=null; waitingHuman=false; legalNow=[]; buildSet.clear(); stepCount=0;
-      G = new ToriiGame();
-      logLine('新對局開始 · 紅方先手（紅方「2」號板塊已使用）');
-      logStepHeader();
-      renderAll();
-      maybeAuto();
-    }
+  }
+  G = new FourColorChess(pattern);
+  initialPatternSnapshot = pattern.map(row=>row.slice());
+  logLine('新對局開始 · 黑方先手');
+  computeLegal(); render(); maybeAuto();
+}
 
     btnStart.addEventListener('click', startGame);
+    btnReset.addEventListener('click', ()=>{ elLog.innerHTML=''; });
+
+function updateWinrateBar(){
+  let black = 0.5, white = 0.5;
+  if(G && G.isTerminal()){
+    if(G.winner()==='B'){ black=1; white=0; }
+    else if(G.winner()==='W'){ black=0; white=1; }
+  }else if(typeof MCTS==='function' && G){
+    try{
+      const m = new MCTS({iterations: 1500});
+      // 若 G.focus 尚未設，複製 G 並隨機設一個可用焦點
+      let gTest = G;
+      if(!G.focus && G.turn==='B'){
+        const colors=['red','blue','yellow','green'];
+        for(const col of colors){
+          const tmp = G.clone();
+          if(tmp.tryPlaceInitialFocusOn('B',col) && tmp.legalMovesForFocus().length>0){
+            gTest = tmp; break;
+          }
+        }
+      }
+      const res = m.choose(gTest);
+      if(res && typeof res.winrate==='number'){
+        if(gTest.turn==='B'){ black=res.winrate; white=1-res.winrate; }
+        else{ white=res.winrate; black=1-res.winrate; }
+      }
+    }catch(e){}
+  }
+  document.getElementById('barBlack').style.width = (black*100)+'%';
+  document.getElementById('barWhite').style.width = (white*100)+'%';
+  document.getElementById('blackRate').innerHTML = `<span style="color:#81848A">黑方勝率${(black*100).toFixed(1)}%</span>`;
+  document.getElementById('whiteRate').textContent = `白方勝率${(white*100).toFixed(1)}%`;
+}
 
     // 等高同步（右欄跟左欄）
     (function(){
@@ -970,7 +691,7 @@
       apply();
     })();
 
-    // 啟動
+    // 首次載入先準備一局
     startGame();
   </script>
 </body>

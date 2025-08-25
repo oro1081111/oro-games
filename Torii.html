@@ -203,11 +203,11 @@
         <!-- 行動板塊 -->
         <div class="tiles">
           <div class="tilebox">
-            <h4>紅方行動板塊</h4>
+            <h4 style="color:#f87171">紅方 行動板塊</h4>
             <div class="tileRow" id="tilesR"></div>
           </div>
           <div class="tilebox">
-            <h4>藍方行動板塊</h4>
+            <h4 style="color:#60a5fa">藍方 行動板塊</h4>
             <div class="tileRow" id="tilesB"></div>
           </div>
         </div>
@@ -236,6 +236,14 @@
               <option value="human">玩家</option>
               <option value="random">隨機</option>
               <option value="ai" selected>AI</option>
+            </select>
+          </div>
+          <div class="row">
+            <label>開局設置</label>
+            <select id="opening">
+              <option value="standard" selected>標準</option>
+              <option value="random">隨機</option>
+              <option value="same">相同</option>
             </select>
           </div>
           <div class="row nowrap">
@@ -287,8 +295,8 @@
         <div class="rules" id="about" style="display:none">
           <h3 style="margin:0 0 8px">遊戲介紹</h3>
           <p>
-            Torii 跳躍森靈 是一款雙人棋遊戲。玩家操縱神靈在棋盤上跳躍嬉戲，Torii（日文鳥居）象徵神域門戶，也是森靈的遊樂場！  
-            兩個神靈永不在同一條直線，因此必須穿梭跳躍、散播信徒並建造鳥居。當你率先蓋好 4 座鳥居，或在棋盤上散播滿 9 枚信徒時，即刻獲勝！
+            Torii 跳躍森靈 是一款雙人棋遊戲。玩家操縱森靈在棋盤上跳躍嬉戲，Torii（日文鳥居）象徵神域門戶，也是森靈的遊樂場！  
+            兩個森靈永不在同一條直線，因此必須穿梭跳躍、散播信徒並建造鳥居。當你率先蓋好 4 座鳥居，或在棋盤上散播滿 9 枚信徒時，即刻獲勝！
           </p>
 
           <h3 style="margin:12px 0 6px">遊戲設計</h3>
@@ -308,7 +316,7 @@
           </div>
       </div>
 
-      <div class="footer">奧羅桌遊設計工作室 · 程式練習作品</div>
+      <div class="footer">未來預計寫：已取得出版社與設計師同意製作分享（現在還未取得）</div>
     </div>
   </div>
 
@@ -691,6 +699,8 @@
               const ok = G.buildToriiAt(r,c);
               if(ok){
                 logLine(`在 (${r+1}, ${c+1}) 建立鳥居`);
+                stepCount++;
+                if(G.building) logStepHeader();
                 if(G.isTerminal()){ logLine(`<b>${playerLabel(G.winner())}達成勝利條件（4 座鳥居）</b>`); }
                 computeLegal(); renderAll();
                 if(!G.building && !G.isTerminal()){ maybeAuto(); }
@@ -863,12 +873,14 @@
       computeLegal(); renderAll();
       if(G.isTerminal()){
         logLine(`<b>${playerLabel(G.winner())}達成勝利條件（4 座鳥居）</b>`);
+        updateWinrateBar();
         return;
       }
       if(G.building){
         await autoBuildPhase(role);
       }else{
         stepCount++;
+        logStepHeader();
         maybeAuto();
       }
     }
@@ -980,7 +992,31 @@
 
     function startGame(){
       elLog.innerHTML=''; M=null; waitingHuman=false; legalNow=[]; buildSet.clear(); stepCount=0;
+      // 開局設置
+      const opening = document.getElementById('opening') ? document.getElementById('opening').value : 'standard';
+      let redInit = {r:1, c:1}, blueInit = {r:2, c:2};
+      if(opening === 'random'){
+        // 隨機不同行不同列
+        const rows = [0,1,2,3], cols = [0,1,2,3];
+        const r1 = rows[Math.floor(Math.random()*4)];
+        let r2 = rows.filter(r=>r!==r1)[Math.floor(Math.random()*3)];
+        const c1 = cols[Math.floor(Math.random()*4)];
+        let c2 = cols.filter(c=>c!==c1)[Math.floor(Math.random()*3)];
+        redInit = {r:r1, c:c1};
+        blueInit = {r:r2, c:c2};
+        // 記錄快照
+        window._toriiSnapshot = { redInit, blueInit };
+      } else if(opening === 'same' && window._toriiSnapshot) {
+        // 用前一盤快照
+        redInit = window._toriiSnapshot.redInit || {r:1, c:1};
+        blueInit = window._toriiSnapshot.blueInit || {r:2, c:2};
+      } else {
+        // 標準也記錄快照
+        window._toriiSnapshot = { redInit, blueInit };
+      }
       G = new ToriiGame();
+      G.spirit.R = {...redInit};
+      G.spirit.B = {...blueInit};
       logLine('新對局開始 · 紅方先手（紅方「2」號板塊已使用）');
       logStepHeader();
       renderAll();
