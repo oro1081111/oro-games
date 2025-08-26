@@ -1,0 +1,56 @@
+name: Update Page Views
+
+on:
+  schedule:
+    - cron: "*/6 * * * *"    # 每小時（UTC 整點）
+  workflow_dispatch:        # 允許手動觸發
+
+permissions:
+  contents: write           # 允許推回 repo
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install jq
+        run: sudo apt-get update -y && sudo apt-get install -y jq
+
+      - name: Fetch hits and build JSON
+        shell: bash
+        run: |
+          fetch_hits () {
+            URL="$1"
+            TMP=$(mktemp)
+            curl -fsSL "$URL" -o "$TMP" || echo "" > "$TMP"
+            # 從 SVG 抓最後一個數字（徽章右半部）
+            grep -oE '>[0-9]+' "$TMP" | tail -n1 | tr -dc '0-9'
+          }
+
+          HOME=$(fetch_hits "https://hits.sh/oro1081111.github.io/oro-games/index.html.svg")
+          FCG=$(fetch_hits "https://hits.sh/oro1081111.github.io/oro-games/FCG.html.svg")
+          FMG=$(fetch_hits "https://hits.sh/oro1081111.github.io/oro-games/FMG.html.svg")
+          TORII=$(fetch_hits "https://hits.sh/oro1081111.github.io/oro-games/Torii.html.svg")
+          UPDATED=$(date -u +%FT%TZ)
+
+          jq -n \
+            --argjson home "${HOME:-0}" \
+            --argjson fcg "${FCG:-0}" \
+            --argjson fmg "${FMG:-0}" \
+            --argjson torii "${TORII:-0}" \
+            --arg updated "$UPDATED" \
+            '{Home:$home, FCG:$fcg, FMG:$fmg, Torii:$torii, updated_at:$updated}' > views.json
+
+      - name: Commit changes
+        run: |
+          if git diff --quiet views.json; then
+            echo "No changes."
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add views.json
+            git commit -m "Update views.json"
+            git push
+          fi

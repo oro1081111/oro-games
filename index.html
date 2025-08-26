@@ -69,6 +69,31 @@
     footer{margin-top:18px; padding:12px 4px; font-size:12px; color:#99a4c7; text-align:center}
     a.inline{color:#6ee7ff; text-decoration:underline}
     a.inline:hover{color:#fff}
+        /* 讓 header 成為定位容器 */
+    .card header { position: relative; }
+
+    /* 右側徽章：在 header 內、靠右、垂直置中 */
+    .counter{
+      position: absolute;
+      top: 50%;
+      right: 16px;           /* 往左內縮一點，避免貼到邊框 */
+      transform: translateY(-50%);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: #b6c4ee;
+    }
+
+    /* 徽章樣式（可微調高度/字重） */
+    .counter .badge{
+      background:#0b1333;
+      border:1px solid #24305f;
+      padding:2px 8px;
+      border-radius:999px;
+      font-weight:700;
+      line-height: 1;        /* 避免看起來偏上/偏下 */
+    }
   </style>
 </head>
 <body>
@@ -84,7 +109,8 @@
       <!-- 1) 四色棋 -->
       <article class="card">
         <header>
-          <h2>四色棋 Four Color Chess <span class="tag">奧羅原創遊戲</span></h2>
+          <h2>四色棋 Four Color Chess</h2>
+          <div class="counter"><span class="badge">遊玩次數 <span id="ctr-fcg">—</span></span></div>
         </header>
         <div class="body">
           <a class="preview" href="FCG.html" aria-label="進入四色棋">
@@ -110,7 +136,8 @@
       <!-- 2) Four-Moves-Chess -->
       <article class="card">
         <header>
-          <h2>四步棋 Four Moves Chess <span class="tag">非原創</span></h2>
+          <h2>四步棋 Four Moves Chess</h2>
+          <div class="counter"><span class="badge">遊玩次數 <span id="ctr-fmg">—</span></span></div>
         </header>
         <div class="body">
           <a class="preview" href="FMG.html" aria-label="進入四步棋">
@@ -136,7 +163,8 @@
       <!-- 3) 跳躍森靈 -->
       <article class="card">
         <header>
-          <h2>跳躍森靈 Torii <span class="tag">桌遊愛樂事</span></h2>
+          <h2>跳躍森靈 Torii</h2>
+          <div class="counter"><span class="badge">遊玩次數 <span id="ctr-torii">—</span></span></div>
         </header>
         <div class="body">
           <a class="preview" href="Torii.html" aria-label="進入跳躍森靈">
@@ -197,9 +225,33 @@
 
     </section>
 
-    <footer>
-      © 奧羅桌遊設計工作室 · 程式練習。自製美術與規則說明僅供非商業分享，請勿私自商用。原創桌遊版權屬於各自作者與出版社。
+    <footer class="site-footer">
+      <div>© 奧羅桌遊設計工作室 · 程式練習。自製美術與規則說明僅供非商業分享，請勿私自商用。原創桌遊版權屬於各自作者與出版社。</div>
+      <div class="page-views">本頁面瀏覽次數：<strong id="ctr-home">—</strong></div>
     </footer>
+
+
   </div>
+  <script>
+  (function(){
+    function setNum(id, val){
+      var el = document.getElementById(id);
+      if (el) el.textContent = (val ?? 0);
+    }
+    fetch("./views.json?"+Date.now(), {cache:"no-store"})
+      .then(r => r.json())
+      .then(v => {
+        setNum("ctr-fcg",   v.FCG);
+        setNum("ctr-fmg",   v.FMG);
+        setNum("ctr-torii", v.Torii);
+        setNum("ctr-home",  v.Home);   // 新增首頁瀏覽數
+      })
+      .catch(() => {
+        setNum("ctr-fcg",0); setNum("ctr-fmg",0); setNum("ctr-torii",0); setNum("ctr-home",0);
+      });
+  })();
+  </script>
+  <img src="https://hits.sh/oro1081111.github.io/oro-games/index.html.svg?style=flat-square&label=" 
+     alt="" style="display:none" aria-hidden="true">
 </body>
 </html>
