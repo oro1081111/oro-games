@@ -2,7 +2,7 @@ name: Update Page Views
 
 on:
   schedule:
-    - cron: "*/5 * * * *"             # 每小時
+    - cron: "*/5 * * * *"              
   workflow_dispatch:
 
 permissions:
