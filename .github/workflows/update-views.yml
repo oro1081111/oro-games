@@ -2,11 +2,11 @@ name: Update Page Views
 
 on:
   schedule:
-    - cron: "*/6 * * * *"    # 每小時（UTC 整點）
-  workflow_dispatch:        # 允許手動觸發
+    - cron: "*/5 * * * *"             # 每小時
+  workflow_dispatch:
 
 permissions:
-  contents: write           # 允許推回 repo
+  contents: write
 
 jobs:
   update:
@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0             # 允許 pull/rebase
 
       - name: Install jq
         run: sudo apt-get update -y && sudo apt-get install -y jq
@@ -25,7 +27,6 @@ jobs:
             URL="$1"
             TMP=$(mktemp)
             curl -fsSL "$URL" -o "$TMP" || echo "" > "$TMP"
-            # 從 SVG 抓最後一個數字（徽章右半部）
             grep -oE '>[0-9]+' "$TMP" | tail -n1 | tr -dc '0-9'
           }
 
@@ -43,14 +44,32 @@ jobs:
             --arg updated "$UPDATED" \
             '{Home:$home, FCG:$fcg, FMG:$fmg, Torii:$torii, updated_at:$updated}' > views.json
 
-      - name: Commit changes
+      - name: Commit & push (with rebase / retry)
+        shell: bash
         run: |
+          # 若 views.json 沒變就直接結束
           if git diff --quiet views.json; then
-            echo "No changes."
+            echo "No changes in views.json"
+            exit 0
+          fi
+
+          git config user.name  "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          # 先確保本地分支和遠端同步，再提交
+          BRANCH="${GITHUB_REF_NAME:-main}"
+          git fetch origin "$BRANCH"
+          git checkout "$BRANCH"
+          git pull --rebase origin "$BRANCH"
+
+          git add views.json
+          git commit -m "Update views.json" || exit 0
+
+          # 嘗試推送；若被拒絕（非快轉），再 pull --rebase 一次後重試
+          if git push origin "$BRANCH"; then
+            echo "Pushed."
           else
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add views.json
-            git commit -m "Update views.json"
-            git push
+            echo "Push rejected, rebasing then retrying..."
+            git pull --rebase origin "$BRANCH"
+            git push origin "$BRANCH"
           fi
