@@ -2,20 +2,25 @@ name: Update Page Views
 
 on:
   schedule:
-    - cron: "*/5 * * * *"              
-  workflow_dispatch:
+    - cron: "*/5 * * * *"        # 每 5 分鐘；要改每小時 → "0 * * * *"
+  workflow_dispatch:              # 可手動觸發
 
 permissions:
-  contents: write
+  contents: write                 # 允許用 GITHUB_TOKEN 推回 repo
+
+concurrency:
+  group: update-views
+  cancel-in-progress: true        # 避免多次同時執行互相踩到
 
 jobs:
   update:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0             # 允許 pull/rebase
+          fetch-depth: 0          # 需要完整歷史以便 rebase
 
       - name: Install jq
         run: sudo apt-get update -y && sudo apt-get install -y jq
@@ -23,10 +28,12 @@ jobs:
       - name: Fetch hits and build JSON
         shell: bash
         run: |
+          set -euo pipefail
           fetch_hits () {
             URL="$1"
             TMP=$(mktemp)
             curl -fsSL "$URL" -o "$TMP" || echo "" > "$TMP"
+            # 從 SVG 提取徽章右半部數字
             grep -oE '>[0-9]+' "$TMP" | tail -n1 | tr -dc '0-9'
           }
 
@@ -37,17 +44,19 @@ jobs:
           UPDATED=$(date -u +%FT%TZ)
 
           jq -n \
-            --argjson home "${HOME:-0}" \
-            --argjson fcg "${FCG:-0}" \
-            --argjson fmg "${FMG:-0}" \
+            --argjson home  "${HOME:-0}" \
+            --argjson fcg   "${FCG:-0}"  \
+            --argjson fmg   "${FMG:-0}"  \
             --argjson torii "${TORII:-0}" \
             --arg updated "$UPDATED" \
             '{Home:$home, FCG:$fcg, FMG:$fmg, Torii:$torii, updated_at:$updated}' > views.json
 
-      - name: Commit & push (with rebase / retry)
+      - name: Commit & push with rebase/retry
         shell: bash
         run: |
-          # 若 views.json 沒變就直接結束
+          set -euo pipefail
+
+          # 若 views.json 無變更則直接結束
           if git diff --quiet views.json; then
             echo "No changes in views.json"
             exit 0
@@ -56,20 +65,26 @@ jobs:
           git config user.name  "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          # 先確保本地分支和遠端同步，再提交
           BRANCH="${GITHUB_REF_NAME:-main}"
-          git fetch origin "$BRANCH"
-          git checkout "$BRANCH"
-          git pull --rebase origin "$BRANCH"
-
           git add views.json
-          git commit -m "Update views.json" || exit 0
+          git commit -m "Update views.json" || true
 
-          # 嘗試推送；若被拒絕（非快轉），再 pull --rebase 一次後重試
-          if git push origin "$BRANCH"; then
-            echo "Pushed."
-          else
-            echo "Push rejected, rebasing then retrying..."
-            git pull --rebase origin "$BRANCH"
-            git push origin "$BRANCH"
-          fi
+          attempt_push () {
+            git fetch origin "$BRANCH"
+            git pull --rebase --autostash origin "$BRANCH" || true
+            git push origin HEAD:"$BRANCH"
+          }
+
+          # 最多重試 3 次，避免 race condition
+          for i in 1 2 3; do
+            if attempt_push; then
+              echo "Pushed on try #$i"
+              exit 0
+            else
+              echo "Push failed on try #$i, retrying..."
+              sleep 2
+            fi
+          done
+
+          echo "Giving up after 3 tries."
+          exit 1
