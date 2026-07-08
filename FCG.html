@@ -212,6 +212,7 @@
     </div>
   </div>
 
+  <script src="stats.js"></script>
   <script>
     // ========== 核心規則引擎 ==========
     class FourColorChess {
@@ -608,8 +609,9 @@ async function maybeAuto(){
     function chooseByMCTS(state){ const m = M || (M=new MCTS({iterations: Math.max(200, Number(itersInput.value)||2000)})); m.iterations = Math.max(200, Number(itersInput.value)||2000); return m.choose(state); }
     function sleep(ms){ return new Promise(r=>setTimeout(r, ms)); }
 
-function startGame(){
+function startGame(options){
   elLog.innerHTML=''; M=null; waitingHuman=false; legalNow=[]; stepCount = 0;
+  if((!options || options.count !== false) && window.OroStats) OroStats.increment("FCG");
   // 依棋盤設置建立 pattern
   const mode = openingSel.value;
   let pattern;
@@ -650,7 +652,7 @@ function updateWinrateBar(){
     else if(G.winner()==='W'){ black=0; white=1; }
   }else if(typeof MCTS==='function' && G){
     try{
-      const m = new MCTS({iterations: 1500});
+      const m = new MCTS({iterations: 250});
       // 若 G.focus 尚未設，複製 G 並隨機設一個可用焦點
       let gTest = G;
       if(!G.focus && G.turn==='B'){
@@ -692,9 +694,25 @@ function updateWinrateBar(){
     })();
 
     // 首次載入先準備一局
-    startGame();
+    (function(){
+      try{
+        const g = new FourColorChess();
+        console.assert(g.turn === 'B', 'FCG starts with black');
+        console.assert(g.tryPlaceInitialFocusOn('B', 'green') === true, 'black can place initial focus');
+        const moves = g.legalMovesForFocus();
+        console.assert(moves.length > 0, 'focused piece has legal moves');
+        const cp = g.clone();
+        cp.applyMove(moves[0]);
+        console.assert(cp.turn === 'W', 'move switches turn');
+        const act = new MCTS({iterations:20}).choose(new FourColorChess());
+        console.assert(act !== null, 'MCTS returns an opening action');
+        console.log('[FCG Self-test] OK');
+      }catch(e){
+        console.error('[FCG Self-test] FAIL', e);
+      }
+    })();
+
+    startGame({count:false});
   </script>
-  <!-- FCG.html 內 -->
-<img src="https://hits.sh/oro1081111.github.io/oro-games/FCG.html.svg?style=flat-square&label=" alt="" style="display:none">
 </body>
 </html>

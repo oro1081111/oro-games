@@ -215,6 +215,7 @@
     </div>
   </div>
 
+  <script src="stats.js"></script>
   <script>
     // ====== 遊戲資料結構 ======
     const DIRS = { U:[-1,0], D:[1,0], L:[0,-1], R:[0,1] };
@@ -568,8 +569,9 @@
       return out.join('\n');
     }
 
-    function startGame(){ try{
+    function startGame(options){ try{
         const opening = openingSel.value; elLog.innerHTML=''; ply=1; waitingHuman=false; pendingLegal=[]; mcts=null; autoDelay=400;
+        if((!options || options.count !== false) && window.OroStats) OroStats.increment("FMG");
         if(opening==='random'){
           game = GameJS.fromRandom();
         } else if(opening==='standard'){
@@ -596,7 +598,7 @@
         else if(game.winner()==='B'){ red=0; blue=1; }
       }else if(typeof MCTS==='function' && game){
         try{
-          const m = new MCTS({iterations: 1500});
+          const m = new MCTS({iterations: 250});
           const res = m.chooseWithStats(game);
           if(res && typeof res.p==='number'){
             if(game.currentPlayer()==='R'){ red=res.p; blue=1-res.p; }
@@ -640,7 +642,7 @@
     })();
 
     // 首次載入就準備一局
-    startGame();
+    startGame({count:false});
   </script>
 <script>
 // === 等高同步（僅影響高度，不改任何現有行為/樣式） ===
@@ -664,6 +666,5 @@
   apply();
 })();
 </script>
-<img src="https://hits.sh/oro1081111.github.io/oro-games/FMG.html.svg?style=flat-square&label=" alt="" style="display:none">
 </body>
 </html>

@@ -202,7 +202,7 @@
       </header>
       <div class="body">
         <div class="preview" aria-label="敬請期待">
-          <img src="thumb-comingsoon.png" alt="Coming Soon 縮圖" class="thumb-img" style="max-width:90%;max-height:170px;object-fit:contain;opacity:0.6;filter:grayscale(100%);">
+          <strong style="font-size:20px;color:#9fb0d6;">Coming Soon</strong>
         </div>
         <div>
           <p class="desc">全新遊戲正在製作中，尚未完成，敬請期待！</p>
@@ -232,13 +232,14 @@
 
 
   </div>
+  <script src="stats.js"></script>
   <script>
   (function(){
     function setNum(id, val){
       var el = document.getElementById(id);
       if (el) el.textContent = (val ?? 0);
     }
-    fetch("./views.json?"+Date.now(), {cache:"no-store"})
+    Promise.resolve({json:()=>Promise.resolve({FCG:OroStats.get("FCG"),FMG:OroStats.get("FMG"),Torii:OroStats.get("Torii"),Home:OroStats.total()})})
       .then(r => r.json())
       .then(v => {
         setNum("ctr-fcg",   v.FCG);
@@ -251,7 +252,5 @@
       });
   })();
   </script>
-  <img src="https://hits.sh/oro1081111.github.io/oro-games/index.html.svg?style=flat-square&label=" 
-     alt="" style="display:none" aria-hidden="true">
 </body>
 </html>
