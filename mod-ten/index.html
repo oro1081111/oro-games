@@ -1,0 +1,128 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1320">
+  <meta name="description" content="MOD TEN：和三位電腦玩家對戰的手機卡牌遊戲。保持答案尾數相同，提高數值，率先打光手牌！">
+  <meta name="robots" content="noindex,nofollow">
+  <title>MOD TEN｜奧羅遊戲原型</title>
+  <link rel="stylesheet" href="style.css">
+  <script src="app.js" defer></script>
+</head>
+<body>
+  <div class="app">
+    <header class="top">
+      <div class="brand">
+        <h1>MOD TEN</h1>
+        <small>同尾數 × 數字運算 × 手牌脫手　|　1 人 VS 3 電腦</small>
+      </div>
+      <nav class="top-actions" aria-label="遊戲選單">
+        <button id="rulesBtn" type="button" class="icon-button" aria-haspopup="dialog">規則</button>
+        <button id="resetBtn" type="button" class="icon-button">重開</button>
+      </nav>
+    </header>
+
+    <section id="rivals" class="rivals" aria-label="電腦玩家"></section>
+
+    <main>
+      <section class="board" aria-label="目前桌面">
+        <div class="board-meta">
+          <span id="roundText">第 1 輪</span>
+          <span class="deck">起始牌庫剩 <b id="deckCount">—</b> 張</span>
+        </div>
+        <div class="board-core">
+          <div class="start-col">
+            <label>本輪起始牌</label>
+            <div id="starterFace" class="start-card">—</div>
+          </div>
+          <div class="center-value">
+            <label>目前數值</label>
+            <div id="boardValue" class="big-value" aria-live="polite">—</div>
+            <span id="boardCount" class="count">起始值</span>
+          </div>
+          <div class="target-col">
+            <label>目標尾數</label>
+            <div id="targetDigit" class="target-number">—</div>
+            <small>答案個位數</small>
+          </div>
+        </div>
+        <div id="lastExpression" class="board-expression">本輪起始數值</div>
+        <div id="turnPill" class="turn-pill" role="status" aria-live="polite">
+          <span id="turnText">準備開始…</span>
+        </div>
+      </section>
+
+      <section class="history-wrap" aria-label="對局紀錄">
+        <div class="history-heading">
+          <span>最近行動</span><span>PASS 後退出本輪</span>
+        </div>
+        <ol id="history" class="history" aria-live="off"></ol>
+      </section>
+
+      <section class="cockpit" aria-label="你的出牌區">
+        <div class="cockpit-header"><strong>你的手牌</strong><small id="handCounter">剩 7 張</small></div>
+        <div id="hand" class="hand" aria-label="點選手牌，依序組成算式"></div>
+        <div id="selectedCards" class="selected-line" aria-label="已選擇的出牌順序">
+          <span class="selection-placeholder">依序點選手牌，最多 3 張</span>
+        </div>
+        <div id="preview" class="preview" role="status" aria-live="polite">選牌後，這裡會顯示算式與合法性。</div>
+        <div class="actions">
+          <button id="hintBtn" type="button" class="action">提示</button>
+          <button id="clearBtn" type="button" class="action">清除</button>
+          <button id="passBtn" type="button" class="action pass">PASS</button>
+          <button id="playBtn" type="button" class="action primary">出牌</button>
+        </div>
+      </section>
+      <div class="footer-note">MOD TEN · 單機測試版 · 進度自動保存在此裝置</div>
+    </main>
+  </div>
+
+  <div id="toast" class="toast" role="status" aria-live="polite"></div>
+
+  <div id="rulesModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="rulesTitle" hidden>
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 id="rulesTitle">MOD TEN｜遊戲規則</h2>
+        <button type="button" class="icon-button close" id="closeRulesBtn" aria-label="關閉規則">✕</button>
+      </div>
+      <p>你與三位電腦玩家各拿 <strong>7 張牌</strong>。率先將自己的手牌全部打光，即刻獲勝。</p>
+      <h3>40 張牌</h3>
+      <p>＋0～9、−0～9、×1～10、無符號 0～9，各 10 張。沒有 ×0。</p>
+      <h3>每輪起始</h3>
+      <p>從牌庫翻開 1 張起始牌，忽略符號，只取數值，例如 −7 代表 7；×10 代表 10。這個數字的個位數就是本輪必須維持的尾數。</p>
+      <h3>你的回合</h3>
+      <p>依照想要的計算順序，點選 <strong>1～3 張牌</strong>，確認算式合法後按「出牌」；或者按 PASS。PASS 後，這一輪不再行動。</p>
+      <h3>計算方式</h3>
+      <ul>
+        <li>每組算式的第一張牌忽略符號。</li>
+        <li>第二張開始依牌面符號運算，<strong>一律由左至右</strong>，乘法沒有優先權。</li>
+        <li>無符號牌接在前面的數字後，可組成兩位數，例如 2、＋3、5 → 2＋35＝37。</li>
+        <li>不能組成三位數；「07」不合法。×10 本身是完整一張牌。</li>
+        <li>中途可出現負數，最終答案必須是非負整數。</li>
+      </ul>
+      <h3>什麼時候能跟牌？</h3>
+      <p>答案的個位數要跟本輪目標相同，此外還要符合其中一項：</p>
+      <ul>
+        <li><strong>答案更大：</strong>無論出牌張數多少都合法。</li>
+        <li><strong>答案相同：</strong>出牌張數必須與桌面上一組相同或更多。</li>
+      </ul>
+      <p class="example">例：桌上 7｜3 張 → 可以打 17｜1 張；不能打 7｜2 張。</p>
+      <h3>一輪結束</h3>
+      <p>當已有 3 位玩家 PASS，本輪即結束。由本輪最後成功出牌者先手，翻新起始牌開始下一輪；若本輪無人出牌，則由唯一未 PASS 的玩家先手。</p>
+      <h3>這個測試版的補充</h3>
+      <p>牌庫用盡時，已打出的牌和舊起始牌會洗回牌庫。電腦會從合法算式中選牌，不會查看你的手牌。你可以按「提示」讓系統替你選出建議的合法算式，但不會自動打出。</p>
+      <button id="rulesCloseAction" class="action primary wide" type="button" onclick="document.getElementById('closeRulesBtn').click()">了解，繼續遊戲</button>
+    </div>
+  </div>
+
+  <div id="finishModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="finishTitle" hidden>
+    <div class="modal-card finish-card">
+      <div class="trophy" aria-hidden="true">★</div>
+      <h2 id="finishTitle">遊戲結束</h2>
+      <p id="finishText"></p>
+      <button id="playAgainBtn" class="action primary wide" type="button">再玩一局</button>
+    </div>
+  </div>
+</body>
+</html>
