@@ -1,6 +1,6 @@
 "use strict";
 
-const STORE_KEY = "oro-modten-v1";
+const STORE_KEY = "oro-modten-v2";
 const ICON = { plus: "+", minus: "−", mul: "×", plain: "" };
 const ORDER = { plain: 0, plus: 1, minus: 2, mul: 3 };
 const NAMES = ["你", "電腦 A", "電腦 B", "電腦 C"];
@@ -12,7 +12,7 @@ let toastTimer = null;
 function newDeck() {
   const cards = [];
   let id = 0;
-  for (let n = 0; n <= 9; n++) {
+  for (let n = 1; n <= 10; n++) {
     cards.push({ id: "c" + id++, kind: "plus", value: n });
   }
   for (let n = 0; n <= 9; n++) {
@@ -40,17 +40,20 @@ function sortHand(cards) {
 }
 function evaluate(cards) {
   if (!cards.length || cards.length > 3) return { ok: false, reason: "每次必須使用 1～3 張牌。" };
-  const terms = [{ op: null, digits: String(cards[0].value) }];
+  const terms = [{ op: null, digits: String(cards[0].value), isTenCard: cards[0].value === 10 && (cards[0].kind === "plus" || cards[0].kind === "mul") }];
   for (let i = 1; i < cards.length; i++) {
     const card = cards[i];
     if (card.kind === "plain") {
       const last = terms[terms.length - 1];
-      if (last.digits.length !== 1 || last.digits === "0") {
-        return { ok: false, reason: "不能組成三位數，也不能以 0 作為兩位數十位。" };
+      const isNormalTwoDigits = last.digits.length === 1 && last.digits !== "0";
+      const isSpecialTen = last.isTenCard && last.digits === "10";
+      if (!isNormalTwoDigits && !isSpecialTen) {
+        return { ok: false, reason: "一般數字最多兩位，只有＋10、×10 能再接一張無符號數字；不能有前導 0。" };
       }
       last.digits += String(card.value);
+      last.isTenCard = false;
     } else {
-      terms.push({ op: card.kind, digits: String(card.value) });
+      terms.push({ op: card.kind, digits: String(card.value), isTenCard: card.value === 10 && (card.kind === "plus" || card.kind === "mul") });
     }
   }
   let value = Number(terms[0].digits);
@@ -138,7 +141,7 @@ function startGame() {
   for (let n = 0; n < 7; n++) for (let i = 0; i < 4; i++) players[i].hand.push(deck.pop());
   players.forEach(p => sortHand(p.hand));
   game = {
-    version: 1, players, deck, discard: [], starter: null,
+    version: 2, players, deck, discard: [], starter: null,
     round: 0, lead: 0, current: 0, currentValue: 0, currentCount: 0,
     target: 0, lastExpression: "", lastPlayedBy: null,
     passed: [false, false, false, false], selected: [],
@@ -356,7 +359,7 @@ function showFinish() {
 function loadSaved() {
   try {
     const saved = JSON.parse(localStorage.getItem(STORE_KEY));
-    if (!saved || saved.version !== 1 || !Array.isArray(saved.players) || saved.players.length !== 4 ||
+    if (!saved || saved.version !== 2 || !Array.isArray(saved.players) || saved.players.length !== 4 ||
         !Array.isArray(saved.deck) || !Array.isArray(saved.discard) ||
         !Array.isArray(saved.passed) || saved.passed.length !== 4 ||
         !saved.starter) return false;
