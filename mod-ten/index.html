@@ -55,7 +55,7 @@
 
       <section class="history-wrap" aria-label="對局紀錄">
         <div class="history-heading">
-          <span>最近行動</span><span>PASS 後退出本輪</span>
+          <span>最近行動</span><span>PASS 抽 1 張並退出本輪</span>
         </div>
         <ol id="history" class="history" aria-live="off"></ol>
       </section>
@@ -70,7 +70,7 @@
         <div class="actions">
           <button id="hintBtn" type="button" class="action">提示</button>
           <button id="clearBtn" type="button" class="action">清除</button>
-          <button id="passBtn" type="button" class="action pass">PASS</button>
+          <button id="passBtn" type="button" class="action pass">PASS＋1</button>
           <button id="playBtn" type="button" class="action primary">出牌</button>
         </div>
       </section>
@@ -92,7 +92,7 @@
       <h3>每輪起始</h3>
       <p>從牌庫翻開 1 張起始牌，忽略符號，只取數值，例如 −7 代表 7；×10 代表 10。這個數字的個位數就是本輪必須維持的尾數。</p>
       <h3>你的回合</h3>
-      <p>依照想要的計算順序，點選 <strong>1～3 張牌</strong>，確認算式合法後按「出牌」；或者按 PASS。PASS 後，這一輪不再行動。</p>
+      <p>依照想要的計算順序，點選 <strong>1～3 張牌</strong>，確認算式合法後按「出牌」；或者按 PASS。<strong>任何玩家 PASS 時，立即抽 1 張牌加入手牌</strong>，之後退出本輪，不再行動。</p>
       <h3>計算方式</h3>
       <ul>
         <li>每組算式的第一張牌忽略符號。</li>
