@@ -60,7 +60,7 @@ function evaluate(cards) {
     const n = Number(t.digits);
     if (t.op === "plus") { value += n; expression += "＋" + t.digits; }
     else if (t.op === "minus") { value -= n; expression += "−" + t.digits; }
-    else if (t.op === "mul") { value *= n; expression += "×" + t.digits; }
+    else if (t.op === "mul") { value *= n; expression = (terms.slice(1, i).some(prev => prev.op === "plus" || prev.op === "minus") ? "(" + expression + ")" : expression) + "×" + t.digits; }
   }
   return { ok: true, value, expression };
 }
