@@ -209,11 +209,26 @@ function playMove(playerIndex, ids) {
   advanceTurn();
   return true;
 }
+function drawForPass(playerIndex) {
+  // 起始牌仍在桌面，不會被當作可抽取的牌。
+  if (!game.deck.length && game.discard.length) {
+    game.deck = shuffle(game.discard);
+    game.discard = [];
+    addLog("牌庫已耗盡，將棄牌洗回牌庫。");
+  }
+  if (!game.deck.length) return null;
+  const card = game.deck.pop();
+  game.players[playerIndex].hand.push(card);
+  sortHand(game.players[playerIndex].hand);
+  return card;
+}
 function passTurn(playerIndex) {
   if (game.winner !== null || game.transitioning || game.current !== playerIndex || game.passed[playerIndex]) return;
+  const drawn = drawForPass(playerIndex);
   game.passed[playerIndex] = true;
   game.selected = [];
-  addLog(NAMES[playerIndex] + " PASS，本輪不再出牌。");
+  addLog(NAMES[playerIndex] + (drawn ? " PASS，抽 1 張牌，本輪不再出牌。" : " PASS，但沒有可抽的牌，本輪不再出牌。"));
+  if (playerIndex === 0 && drawn) notify("PASS：抽到 " + label(drawn) + "，本輪已退出。");
   advanceTurn();
 }
 function advanceTurn() {
