@@ -69,9 +69,17 @@ main{width:100%;max-width:1280px;padding:12px}
  .height-tag{font-size:9px}
  #moveLabel{display:block;margin-top:8px}
 }
+
+main{display:flex;flex-direction:column}
+main>.grid2{order:2}
+main>#scoreChipsPanel{order:3}
+main>.legend{order:4}
+.move-detail{border-top:1px dashed #d5dfd7;margin-top:10px;padding-top:6px}
+.move-detail summary{cursor:pointer;font-weight:600;color:#38694f}
+@media(max-width:640px){main>p.muted{display:none}}
 </style></head><body><main><nav class="top-nav"><a href="./">全部對局</a><span>｜第 3 場示範</span></nav><h1>馬丘比丘的奠基者｜對局重播</h1><p class="muted">盤面使用小圓圈表示米寶：祭司、工人會覆蓋在聖殿右上角，但仍保留聖殿名稱與資訊；同一片板塊內部不留縫隙，方便辨識整塊 1×2 板塊或中央 2×2 中央板塊。</p>
-<div class="panel"><button id="prev">上一步</button><button id="next">下一步</button><button id="first">回到開始</button><span id="moveLabel"></span><p><input id="step" type="range" min="0" max="0" value="0"></p><div id="detail" class="detail-box"></div></div>
-<div class="panel"><div class="chips" id="scores"></div></div>
+<div class="panel"><button id="prev">上一步</button><button id="next">下一步</button><button id="first">回到開始</button><span id="moveLabel"></span><p><input id="step" type="range" min="0" max="0" value="0"></p><details class="move-detail"><summary>本步行動詳情</summary><div id="detail" class="detail-box"></div></details></div>
+<div class="panel" id="scoreChipsPanel"><div class="chips" id="scores"></div></div>
 <div class="grid2"><div class="panel"><h2>盤面</h2><div class="map-tools"><button type="button" id="zoomOut">－ 縮小</button><button type="button" id="zoomIn">＋ 放大</button><button type="button" id="fitMap">符合螢幕</button><span class="tip">盤面可左右滑動</span></div><div id="map"></div></div><div class="panel"><h2>目前計分拆解</h2><div id="scoreBreakdown" class="score-grid"></div></div></div>
 <p class="legend">玩家顏色：一號藍、二號橘、三號綠、四號紫、五號紅。分數拆解中的「每座神殿」會列出該座神殿的高度、計算依據與實際得分，方便追蹤總分如何形成。</p>
 </main><script>
