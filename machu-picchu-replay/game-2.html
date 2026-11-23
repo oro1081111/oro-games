@@ -1,0 +1,270 @@
+<!DOCTYPE html><html lang="zh-Hant"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>馬丘比丘的奠基者｜對局重播</title>
+<style>
+:root{--cell:52px;--gap:0px;--line:rgba(0,0,0,.14)}
+body{margin:0;background:#f5f7f4;color:#1b3330;font:15px/1.55 system-ui,"Noto Sans TC",sans-serif}
+main{max-width:1280px;margin:auto;padding:20px}
+h1{font-size:26px;margin:0 0 8px}
+h2{font-size:18px;margin:0 0 10px}
+button{background:#fff;border:1px solid #b7c4bd;border-radius:7px;padding:8px 14px;margin-right:5px;cursor:pointer}
+button:hover{background:#e5efea}
+.panel{background:white;border:1px solid #dfe7e0;border-radius:12px;padding:16px;margin:14px 0}
+#map{display:grid;gap:var(--gap);max-width:100%;overflow:auto;align-content:start;justify-content:start;background:#dfe7e0;padding:6px;border-radius:12px}
+.sq{width:var(--cell);height:var(--cell);box-sizing:border-box;position:relative;border:1px solid var(--line);text-align:center;overflow:hidden}
+.sq.empty{background:#f0f2ef;border:1px dashed #e3e8e1}
+.sq.center-piece{background:#efe8cf}
+.sq.temple{background:#ecd9b3}
+.sq.temple::after{content:"";position:absolute;inset:3px;border:1px solid rgba(126,94,23,.18);border-radius:8px;pointer-events:none}
+.terrain-土{background:#dbc6a4}.terrain-草{background:#afd09f}.terrain-岩{background:#b7bfc4}.terrain-水{background:#9ccae4}
+.cell-label{position:absolute;inset:3px 4px 14px 4px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:700;font-size:12px;line-height:1.08;color:#17302b}
+.cell-label.small{font-size:11px}
+.height-tag{font-size:10px;font-weight:600;position:absolute;bottom:2px;right:4px;color:#263b38;background:rgba(255,255,255,.72);padding:0 3px;border-radius:6px}
+.coord-tag{font-size:9px;font-weight:500;position:absolute;bottom:2px;left:4px;color:#5d6d66}
+.meeple{position:absolute;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:12px;box-shadow:0 1px 4px rgba(0,0,0,.25);border:2px solid rgba(255,255,255,.92);z-index:4}
+.meeple.priest,.meeple.worker{top:3px;right:3px}
+.meeple.statue{left:50%;top:50%;transform:translate(-50%,-50%);width:24px;height:24px}
+.owner1{background:#357fbc}.owner2{background:#d48730}.owner3{background:#6c9c48}.owner4{background:#9662a9}.owner5{background:#b04c58}
+.muted{color:#71827b}
+.chips{display:flex;gap:9px;flex-wrap:wrap}.chip{border:1px solid #dde6df;border-radius:8px;padding:8px 12px;background:#fff}
+.number{font-variant-numeric:tabular-nums}
+input[type=range]{width:min(650px,100%)}
+.legend{font-size:12px;color:#65756c}
+.grid2{display:grid;grid-template-columns:1.1fr .9fr;gap:14px}
+@media (max-width:1000px){.grid2{grid-template-columns:1fr}}
+.score-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.score-card{border:1px solid #dfe7e0;border-radius:10px;padding:12px;background:#fcfdfc}
+.score-card h3{margin:0 0 8px;font-size:16px}
+.score-card table{width:100%;border-collapse:collapse;font-size:13px}
+.score-card td{padding:2px 0;vertical-align:top;border-bottom:1px dotted #e7eeea}
+.score-card td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.score-card tr:last-child td{border-bottom:none}
+.total-row td{font-weight:800;border-top:1px solid #cfd8d2;padding-top:6px}
+.subnote{font-size:12px;color:#63746d;margin-top:8px}
+.inline-list{margin:4px 0 0 16px;padding:0;font-size:12px;color:#43534d}
+.inline-list li{margin:2px 0}
+.detail-box{font-size:14px;white-space:pre-wrap}
+
+/* Mobile browser improvements for GitHub Pages */
+body{-webkit-text-size-adjust:100%}
+main{max-width:1200px}
+.panel{min-width:0}
+#map{min-width:0;max-width:100%;overflow:auto;touch-action:pan-x pan-y;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+.board-tools{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 10px}
+.board-tools button{min-width:56px}
+.top-links{display:flex;flex-wrap:wrap;gap:9px;margin:10px 0 14px;font-size:14px}
+.top-links a{color:#185b70;text-decoration:none;border-radius:8px;background:#e6f3ee;padding:6px 10px}
+.controls button{min-height:43px;touch-action:manipulation}
+#map .sq{flex-shrink:0}
+@media(max-width:640px){
+ main{padding:10px}h1{font-size:21px}
+ .panel{padding:11px;margin:9px 0}
+ .grid2{display:flex;flex-direction:column;gap:0}
+ .cell-label{font-size:clamp(8px,2.2vw,11px);line-height:1.05}
+ .height-tag{font-size:9px;right:2px}
+ .coord-tag{display:none}
+ .meeple{width:19px;height:19px;font-size:10px}
+ .meeple.statue{width:21px;height:21px}
+ #map{max-height:67vh}
+ .score-grid{grid-template-columns:1fr}
+ #prev,#next{min-width:105px;min-height:48px;font-size:16px}
+ #first{min-height:45px}
+ .subnote{line-height:1.45}
+}
+</style></head><body><main><h1>馬丘比丘的奠基者｜對局重播</h1><nav class="top-links" aria-label="重播選擇"><a href="./index.html">全部對局</a><a href="./game-1.html">第一場</a><a href="./game-2.html">第二場</a><a href="./game-3.html">第三場</a></nav><p class="muted">盤面使用小圓圈表示米寶：祭司、工人會覆蓋在聖殿右上角，但仍保留聖殿名稱與資訊；同一片板塊內部不留縫隙，方便辨識整塊 1×2 板塊或中央 2×2 中央板塊。</p>
+<div class="panel controls"><button id="prev">上一步</button><button id="next">下一步</button><button id="first">回到開始</button><span id="moveLabel"></span><p><input id="step" type="range" min="0" max="0" value="0"></p><div id="detail" class="detail-box"></div></div>
+<div class="panel"><div class="chips" id="scores"></div></div>
+<div class="grid2"><div class="panel"><h2>盤面</h2><div class="board-tools"><button id="zoomout" type="button">縮小 −</button><button id="fit" type="button">適應螢幕</button><button id="zoomin" type="button">放大 ＋</button></div><div id="map"></div></div><div class="panel"><h2>目前計分拆解</h2><div id="scoreBreakdown" class="score-grid"></div></div></div>
+<p class="legend">玩家顏色：一號藍、二號橘、三號綠、四號紫、五號紅。分數拆解中的「每座神殿」會列出該座神殿的高度、計算依據與實際得分，方便追蹤總分如何形成。</p>
+</main><script>
+const RECORD={"seed": 24261124, "n": 4, "initial_stones": [4, 3, 2, 1], "final_stones": [2, 10, 22, 23], "scores": [51, 53, 49, 42], "leaders": [2], "meeples": 24, "placed_tiles": 24, "board_height": 6, "market_remaining": 4, "avg_candidates": 3673.875, "avg_placements": 205.08333333333334, "shrine_usage": [{"game": 0, "seed": 24261124, "players": 4, "seat": 2, "shrine": "height", "tile_id": 17, "x": -1, "y": 0, "height": 4, "focus": "岩", "score": 16}, {"game": 0, "seed": 24261124, "players": 4, "seat": 3, "shrine": "worker", "tile_id": 27, "x": 1, "y": 0, "height": 6, "focus": "", "score": 30}, {"game": 0, "seed": 24261124, "players": 4, "seat": 1, "shrine": "big", "tile_id": 22, "x": 3, "y": -1, "height": 2, "focus": "水", "score": 4}, {"game": 0, "seed": 24261124, "players": 4, "seat": 4, "shrine": "big", "tile_id": 21, "x": 3, "y": -2, "height": 3, "focus": "岩", "score": 6}, {"game": 0, "seed": 24261124, "players": 4, "seat": 4, "shrine": "statue_shrine", "tile_id": 30, "x": 2, "y": 1, "height": 1, "focus": "", "score": 3}, {"game": 0, "seed": 24261124, "players": 4, "seat": 1, "shrine": "statue_shrine", "tile_id": 29, "x": -2, "y": 1, "height": 3, "focus": "", "score": 15}], "moves": [{"round": 1, "player": 1, "tile": 10, "market_index": 3, "market_stones": 1, "coords": [[-2, 0], [-1, 0]], "height": 1, "support_cost": 0, "meeple": "statue", "meeple_pos": [-1, 1], "closed_existing": [], "stones_after": [5, 3, 2, 1], "scores_after": [4, 1, 1, 0]}, {"round": 1, "player": 2, "tile": 26, "market_index": 1, "market_stones": 1, "coords": [[-1, 0], [0, 0]], "height": 2, "support_cost": 0, "meeple": "statue", "meeple_pos": [-1, -1], "closed_existing": [], "stones_after": [5, 4, 2, 1], "scores_after": [5, 4, 1, 0]}, {"round": 1, "player": 3, "tile": 5, "market_index": 1, "market_stones": 2, "coords": [[1, -2], [1, -1]], "height": 1, "support_cost": 0, "meeple": "statue", "meeple_pos": [0, -1], "closed_existing": [], "stones_after": [5, 4, 4, 1], "scores_after": [5, 4, 5, 0]}, {"round": 1, "player": 4, "tile": 23, "market_index": 0, "market_stones": 3, "coords": [[1, -1], [1, 0]], "height": 2, "support_cost": 0, "meeple": "statue", "meeple_pos": [2, -1], "closed_existing": [], "stones_after": [5, 4, 4, 4], "scores_after": [5, 4, 6, 4]}, {"round": 2, "player": 1, "tile": 14, "market_index": 0, "market_stones": 3, "coords": [[0, 1], [0, 0]], "height": 3, "support_cost": 2, "meeple": "statue", "meeple_pos": [0, 2], "closed_existing": [], "stones_after": [6, 4, 4, 4], "scores_after": [11, 4, 7, 4]}, {"round": 2, "player": 2, "tile": 17, "market_index": 0, "market_stones": 2, "coords": [[-1, 0], [0, 0]], "height": 4, "support_cost": 2, "meeple": "priest", "meeple_pos": [-1, 0], "closed_existing": [], "stones_after": [6, 0, 4, 4], "scores_after": [13, 16, 8, 4]}, {"round": 2, "player": 3, "tile": 15, "market_index": 3, "market_stones": 0, "coords": [[0, 1], [0, 0]], "height": 5, "support_cost": 2, "meeple": "worker", "meeple_pos": [0, 1], "closed_existing": [], "stones_after": [6, 0, 12, 4], "scores_after": [17, 8, 13, 4]}, {"round": 2, "player": 4, "tile": 7, "market_index": 0, "market_stones": 4, "coords": [[2, -2], [3, -2]], "height": 1, "support_cost": 0, "meeple": "worker", "meeple_pos": [1, -1], "closed_existing": [], "stones_after": [6, 0, 12, 12], "scores_after": [17, 8, 13, 9]}, {"round": 3, "player": 3, "tile": 27, "market_index": 2, "market_stones": 0, "coords": [[1, 0], [0, 0]], "height": 6, "support_cost": 6, "meeple": "priest", "meeple_pos": [1, 0], "closed_existing": [], "stones_after": [6, 0, 0, 12], "scores_after": [17, 8, 20, 9]}, {"round": 3, "player": 4, "tile": 28, "market_index": 0, "market_stones": 4, "coords": [[3, 0], [3, -1]], "height": 1, "support_cost": 0, "meeple": "statue", "meeple_pos": [2, 0], "closed_existing": [], "stones_after": [6, 0, 0, 16], "scores_after": [17, 8, 20, 19]}, {"round": 3, "player": 1, "tile": 22, "market_index": 3, "market_stones": 0, "coords": [[3, -1], [3, -2]], "height": 2, "support_cost": 0, "meeple": "priest", "meeple_pos": [3, -1], "closed_existing": [], "stones_after": [4, 0, 0, 16], "scores_after": [22, 8, 20, 20]}, {"round": 3, "player": 2, "tile": 1, "market_index": 0, "market_stones": 5, "coords": [[-3, -1], [-2, -1]], "height": 1, "support_cost": 0, "meeple": "statue", "meeple_pos": [4, -2], "closed_existing": [], "stones_after": [4, 5, 0, 16], "scores_after": [22, 13, 20, 20]}, {"round": 4, "player": 4, "tile": 21, "market_index": 2, "market_stones": 0, "coords": [[3, -2], [2, -2]], "height": 3, "support_cost": 2, "meeple": "priest", "meeple_pos": [3, -2], "closed_existing": [], "stones_after": [4, 5, 0, 11], "scores_after": [18, 22, 20, 28]}, {"round": 4, "player": 1, "tile": 8, "market_index": 0, "market_stones": 5, "coords": [[-3, 1], [-2, 1]], "height": 1, "support_cost": 0, "meeple": "statue", "meeple_pos": [3, -3], "closed_existing": [], "stones_after": [9, 5, 0, 11], "scores_after": [28, 22, 20, 28]}, {"round": 4, "player": 2, "tile": 6, "market_index": 1, "market_stones": 2, "coords": [[1, -2], [2, -2]], "height": 4, "support_cost": 4, "meeple": "statue", "meeple_pos": [0, -2], "closed_existing": [], "stones_after": [9, 3, 0, 11], "scores_after": [28, 29, 20, 29]}, {"round": 4, "player": 3, "tile": 25, "market_index": 0, "market_stones": 4, "coords": [[-2, 0], [-2, 1]], "height": 2, "support_cost": 0, "meeple": "worker", "meeple_pos": [-2, 0], "closed_existing": [], "stones_after": [9, 3, 8, 11], "scores_after": [27, 29, 30, 29]}, {"round": 5, "player": 4, "tile": 30, "market_index": 0, "market_stones": 2, "coords": [[2, 1], [3, 1]], "height": 1, "support_cost": 0, "meeple": "priest", "meeple_pos": [2, 1], "closed_existing": [[3, [2, -1]], [3, [2, 0]]], "stones_after": [9, 3, 8, 16], "scores_after": [27, 29, 30, 36]}, {"round": 5, "player": 1, "tile": 29, "market_index": 3, "market_stones": 0, "coords": [[-2, 1], [-3, 1]], "height": 3, "support_cost": 2, "meeple": "priest", "meeple_pos": [-2, 1], "closed_existing": [], "stones_after": [4, 3, 8, 16], "scores_after": [38, 29, 30, 36]}, {"round": 5, "player": 2, "tile": 12, "market_index": 0, "market_stones": 4, "coords": [[-1, -2], [-2, -2]], "height": 1, "support_cost": 0, "meeple": "statue", "meeple_pos": [-3, 0], "closed_existing": [], "stones_after": [4, 7, 8, 16], "scores_after": [38, 39, 30, 36]}, {"round": 5, "player": 3, "tile": 3, "market_index": 0, "market_stones": 4, "coords": [[0, -3], [1, -3]], "height": 1, "support_cost": 0, "meeple": "worker", "meeple_pos": [3, 0], "closed_existing": [[1, [-1, -1]], [2, [0, -1]], [1, [0, -2]]], "stones_after": [4, 9, 18, 16], "scores_after": [38, 41, 41, 36]}, {"round": 6, "player": 3, "tile": 16, "market_index": 1, "market_stones": 1, "coords": [[-1, 2], [-2, 2]], "height": 1, "support_cost": 0, "meeple": "worker", "meeple_pos": [-1, 2], "closed_existing": [[0, [-1, 1]]], "stones_after": [5, 9, 22, 16], "scores_after": [40, 41, 49, 36]}, {"round": 6, "player": 4, "tile": 19, "market_index": 0, "market_stones": 3, "coords": [[-2, -1], [-2, -2]], "height": 2, "support_cost": 0, "meeple": "worker", "meeple_pos": [-2, -1], "closed_existing": [], "stones_after": [5, 9, 22, 23], "scores_after": [40, 42, 49, 39]}, {"round": 6, "player": 1, "tile": 4, "market_index": 0, "market_stones": 3, "coords": [[1, -3], [1, -2]], "height": 5, "support_cost": 6, "meeple": "statue", "meeple_pos": [2, -3], "closed_existing": [], "stones_after": [2, 9, 22, 23], "scores_after": [51, 43, 49, 36]}, {"round": 6, "player": 2, "tile": 11, "market_index": 0, "market_stones": 3, "coords": [[-2, -2], [-1, -2]], "height": 3, "support_cost": 2, "meeple": "statue", "meeple_pos": [1, -4], "closed_existing": [], "stones_after": [2, 10, 22, 23], "scores_after": [51, 53, 49, 36]}], "surface": [{"x": -3, "y": -1, "tile": 1, "height": 1, "kind": "land", "land": "土", "shrine": "", "focus": ""}, {"x": -3, "y": 1, "tile": 29, "height": 3, "kind": "land", "land": "草", "shrine": "", "focus": ""}, {"x": -2, "y": -2, "tile": 11, "height": 3, "kind": "land", "land": "土", "shrine": "", "focus": ""}, {"x": -2, "y": -1, "tile": 19, "height": 2, "kind": "shrine", "land": "", "shrine": "big", "focus": "土"}, {"x": -2, "y": 0, "tile": 25, "height": 2, "kind": "shrine", "land": "", "shrine": "small", "focus": "岩"}, {"x": -2, "y": 1, "tile": 29, "height": 3, "kind": "shrine", "land": "", "shrine": "statue", "focus": ""}, {"x": -2, "y": 2, "tile": 16, "height": 1, "kind": "land", "land": "岩", "shrine": "", "focus": ""}, {"x": -1, "y": -2, "tile": 11, "height": 3, "kind": "land", "land": "水", "shrine": "", "focus": ""}, {"x": -1, "y": 0, "tile": 17, "height": 4, "kind": "shrine", "land": "", "shrine": "height", "focus": "岩"}, {"x": -1, "y": 2, "tile": 16, "height": 1, "kind": "shrine", "land": "", "shrine": "height", "focus": "草"}, {"x": 0, "y": -3, "tile": 3, "height": 1, "kind": "land", "land": "草", "shrine": "", "focus": ""}, {"x": 0, "y": 0, "tile": 27, "height": 6, "kind": "land", "land": "土", "shrine": "", "focus": ""}, {"x": 0, "y": 1, "tile": 15, "height": 5, "kind": "shrine", "land": "", "shrine": "height", "focus": "土"}, {"x": 1, "y": -3, "tile": 4, "height": 5, "kind": "land", "land": "草", "shrine": "", "focus": ""}, {"x": 1, "y": -2, "tile": 4, "height": 5, "kind": "land", "land": "草", "shrine": "", "focus": ""}, {"x": 1, "y": -1, "tile": 23, "height": 2, "kind": "shrine", "land": "", "shrine": "small", "focus": "土"}, {"x": 1, "y": 0, "tile": 27, "height": 6, "kind": "shrine", "land": "", "shrine": "worker", "focus": ""}, {"x": 1, "y": 1, "tile": 0, "height": 1, "kind": "land", "land": "岩", "shrine": "", "focus": ""}, {"x": 2, "y": -2, "tile": 6, "height": 4, "kind": "land", "land": "岩", "shrine": "", "focus": ""}, {"x": 2, "y": 1, "tile": 30, "height": 1, "kind": "shrine", "land": "", "shrine": "statue", "focus": ""}, {"x": 3, "y": -2, "tile": 21, "height": 3, "kind": "shrine", "land": "", "shrine": "big", "focus": "岩"}, {"x": 3, "y": -1, "tile": 22, "height": 2, "kind": "shrine", "land": "", "shrine": "big", "focus": "水"}, {"x": 3, "y": 0, "tile": 28, "height": 1, "kind": "shrine", "land": "", "shrine": "worker", "focus": ""}, {"x": 3, "y": 1, "tile": 30, "height": 1, "kind": "land", "land": "水", "shrine": "", "focus": ""}]};
+const TILES={"1": {"kind": "normal", "left": "土", "right": "土", "shrine": "", "focus": ""}, "2": {"kind": "normal", "left": "土", "right": "土", "shrine": "", "focus": ""}, "3": {"kind": "normal", "left": "草", "right": "草", "shrine": "", "focus": ""}, "4": {"kind": "normal", "left": "草", "right": "草", "shrine": "", "focus": ""}, "5": {"kind": "normal", "left": "岩", "right": "岩", "shrine": "", "focus": ""}, "6": {"kind": "normal", "left": "岩", "right": "岩", "shrine": "", "focus": ""}, "7": {"kind": "normal", "left": "水", "right": "水", "shrine": "", "focus": ""}, "8": {"kind": "normal", "left": "水", "right": "水", "shrine": "", "focus": ""}, "9": {"kind": "normal", "left": "土", "right": "草", "shrine": "", "focus": ""}, "10": {"kind": "normal", "left": "土", "right": "岩", "shrine": "", "focus": ""}, "11": {"kind": "normal", "left": "土", "right": "水", "shrine": "", "focus": ""}, "12": {"kind": "normal", "left": "草", "right": "岩", "shrine": "", "focus": ""}, "13": {"kind": "normal", "left": "草", "right": "水", "shrine": "", "focus": ""}, "14": {"kind": "normal", "left": "岩", "right": "水", "shrine": "", "focus": ""}, "15": {"kind": "shrine", "left": "", "right": "草", "shrine": "height", "focus": "土"}, "16": {"kind": "shrine", "left": "", "right": "岩", "shrine": "height", "focus": "草"}, "17": {"kind": "shrine", "left": "", "right": "水", "shrine": "height", "focus": "岩"}, "18": {"kind": "shrine", "left": "", "right": "土", "shrine": "height", "focus": "水"}, "19": {"kind": "shrine", "left": "", "right": "土", "shrine": "big", "focus": "土"}, "20": {"kind": "shrine", "left": "", "right": "草", "shrine": "big", "focus": "草"}, "21": {"kind": "shrine", "left": "", "right": "岩", "shrine": "big", "focus": "岩"}, "22": {"kind": "shrine", "left": "", "right": "水", "shrine": "big", "focus": "水"}, "23": {"kind": "shrine", "left": "", "right": "水", "shrine": "small", "focus": "土"}, "24": {"kind": "shrine", "left": "", "right": "土", "shrine": "small", "focus": "草"}, "25": {"kind": "shrine", "left": "", "right": "草", "shrine": "small", "focus": "岩"}, "26": {"kind": "shrine", "left": "", "right": "岩", "shrine": "small", "focus": "水"}, "27": {"kind": "shrine", "left": "", "right": "土", "shrine": "worker", "focus": ""}, "28": {"kind": "shrine", "left": "", "right": "岩", "shrine": "worker", "focus": ""}, "29": {"kind": "shrine", "left": "", "right": "草", "shrine": "statue", "focus": ""}, "30": {"kind": "shrine", "left": "", "right": "水", "shrine": "statue", "focus": ""}};
+const r=document.getElementById('step');r.max=RECORD.moves.length;
+let replayZoom=1,fitToWidth=true;
+const getElement = id=>document.getElementById(id);
+const key=(x,y)=>`${x},${y}`;
+const shrineNames={height:'高度',big:'大塊',small:'小塊',worker:'工人',statue:'雕像'};
+const meepleNames={statue:'雕像',worker:'工人',priest:'祭司'};
+const playerColors={1:'藍',2:'橘',3:'綠',4:'紫',5:'紅'};
+function centerSurface(){
+  const s=new Map();
+  [[0,0,'土'],[1,0,'草'],[0,1,'水'],[1,1,'岩']].forEach(([x,y,land])=>s.set(key(x,y),{tile:0,kind:'land',land,height:1}));
+  return s;
+}
+function reconstruct(ix){
+  const surface=centerSurface();
+  const meeples=[];
+  for(let k=0;k<ix;k++){
+    const m=RECORD.moves[k], t=TILES[m.tile];
+    const pieces=t.kind==='normal'
+      ?[{tile:m.tile,kind:'land',land:t.left,height:m.height},{tile:m.tile,kind:'land',land:t.right,height:m.height}]
+      :[{tile:m.tile,kind:'shrine',shrine:t.shrine,focus:t.focus,height:m.height},{tile:m.tile,kind:'land',land:t.right,height:m.height}];
+    m.coords.forEach((p,i)=>surface.set(key(p[0],p[1]),pieces[i]));
+    meeples.push({pos:key(m.meeple_pos[0],m.meeple_pos[1]),player:m.player,kind:m.meeple});
+  }
+  return {surface,meeples};
+}
+function neighbors(pos){
+  const [x,y]=pos.split(',').map(Number);
+  return [[x+1,y],[x-1,y],[x,y+1],[x,y-1]].map(([a,b])=>key(a,b));
+}
+function terrainStats(surface){
+  const high={土:0,草:0,岩:0,水:0};
+  const big={土:0,草:0,岩:0,水:0};
+  const small={土:0,草:0,岩:0,水:0};
+  const lands=new Map([...surface.entries()].filter(([,c])=>c.kind==='land').map(([p,c])=>[p,c.land]));
+  for(const [p,land] of lands.entries()) high[land]=Math.max(high[land],surface.get(p).height);
+  const seen=new Set();
+  for(const [start,land] of lands.entries()){
+    if(seen.has(start)) continue;
+    small[land]+=1;
+    const q=[start]; seen.add(start); let size=0;
+    while(q.length){
+      const here=q.pop(); size+=1;
+      for(const nxt of neighbors(here)) if(!seen.has(nxt) && lands.get(nxt)===land){seen.add(nxt);q.push(nxt);}    }
+    big[land]=Math.max(big[land],size);
+  }
+  return {high,big,small};
+}
+function scoreBreakdown(surface,meeples,stones){
+  const fields=[0,1,2,3].map(()=>({statue:0,height:0,big:0,small:0,worker:0,statue_shrine:0,stone:0,bonus:0,total:0}));
+  const detail=[0,1,2,3].map(()=>({statue:[],height:[],big:[],small:[],worker:[],statue_shrine:[],stone:'',bonus:'',total:0}));
+  const stats=terrainStats(surface);
+  const nworkers=[0,0,0,0], nstatues=[0,0,0,0];
+  for(const m of meeples){
+    const idx=m.player-1;
+    if(m.kind==='worker') nworkers[idx]+=1;
+    if(m.kind==='statue'){
+      nstatues[idx]+=1;
+      const adj=neighbors(m.pos).filter(p=>surface.has(p)).map(p=>surface.get(p).height);
+      const score=adj.reduce((a,b)=>a+b,0);
+      fields[idx].statue+=score;
+      detail[idx].statue.push(`${m.pos}：相鄰高度 ${adj.join('+')||'0'} = ${score}`);
+    }
+  }
+  for(const m of meeples){
+    if(m.kind!=='priest') continue;
+    const idx=m.player-1;
+    const cell=surface.get(m.pos);
+    let bucket=''; let basis=''; let value=0;
+    if(cell.shrine==='height'){
+      bucket='height'; value=stats.high[cell.focus]; basis=`${cell.focus} 最高高度 ${value}`;
+    }else if(cell.shrine==='big'){
+      bucket='big'; value=stats.big[cell.focus]+1; basis=`${cell.focus} 最大連通 ${stats.big[cell.focus]} + 1 = ${value}`;
+    }else if(cell.shrine==='small'){
+      bucket='small'; value=stats.small[cell.focus]; basis=`${cell.focus} 區域數 ${value}`;
+    }else if(cell.shrine==='worker'){
+      bucket='worker'; value=nworkers[idx]+1; basis=`自己的工人 ${nworkers[idx]} + 1 = ${value}`;
+    }else{
+      bucket='statue_shrine'; value=nstatues[idx]+1; basis=`自己的雕像 ${nstatues[idx]} + 1 = ${value}`;
+    }
+    const score=cell.height*value;
+    fields[idx][bucket]+=score;
+    const shrineLabel=`${shrineNames[cell.shrine]}${cell.focus?'-'+cell.focus:''}`;
+    detail[idx][bucket].push(`${m.pos}：${shrineLabel}，高度 ${cell.height} × (${basis}) = ${score}`);
+  }
+  const greatest=Math.max(...stones);
+  const leaders=stones.map((v,i)=>[v,i]).filter(([v])=>v===greatest).map(([,i])=>i);
+  const bonus=leaders.length?Math.floor(6/leaders.length):0;
+  for(let i=0;i<4;i++){
+    fields[i].stone=Math.floor(stones[i]/2);
+    detail[i].stone=`石柱 ${stones[i]} ÷ 2 = ${fields[i].stone}`;
+    if(leaders.includes(i)){
+      fields[i].bonus=bonus;
+      detail[i].bonus=leaders.length===1?`最多石柱獎勵 = ${bonus}`:`並列最多石柱 ${leaders.length} 人，6 ÷ ${leaders.length} = ${bonus}`;
+    }else detail[i].bonus='未獲得最多石柱獎勵';
+    fields[i].total=fields[i].statue+fields[i].height+fields[i].big+fields[i].small+fields[i].worker+fields[i].statue_shrine+fields[i].stone+fields[i].bonus;
+    detail[i].total=fields[i].total;
+  }
+  return {fields,detail,stats,nworkers,nstatues};
+}
+function tileStyle(p,surface){
+  const cell=surface.get(p); if(!cell) return '';
+  const [x,y]=p.split(',').map(Number);
+  const same=(dx,dy)=>{const n=surface.get(key(x+dx,y+dy)); return n && n.tile===cell.tile;};
+  const styles=[];
+  if(same(1,0)) styles.push('border-right-color: transparent;');
+  if(same(-1,0)) styles.push('border-left-color: transparent;');
+  if(same(0,1)) styles.push('border-bottom-color: transparent;');
+  if(same(0,-1)) styles.push('border-top-color: transparent;');
+  const r=8;
+  styles.push(`border-top-left-radius:${(!same(-1,0)&&!same(0,-1))?r:0}px;`);
+  styles.push(`border-top-right-radius:${(!same(1,0)&&!same(0,-1))?r:0}px;`);
+  styles.push(`border-bottom-left-radius:${(!same(-1,0)&&!same(0,1))?r:0}px;`);
+  styles.push(`border-bottom-right-radius:${(!same(1,0)&&!same(0,1))?r:0}px;`);
+  return styles.join('');
+}
+function draw(){
+ const ix=Number(r.value);
+ const {surface,meeples}=reconstruct(ix);
+ const last=ix?RECORD.moves[ix-1]:null;
+ const stones=last?last.stones_after:RECORD.initial_stones;
+ const scoreInfo=scoreBreakdown(surface,meeples,stones);
+ const points=[...surface.keys(),...meeples.map(m=>m.pos)].map(k=>k.split(',').map(Number));
+ const minx=Math.min(...points.map(p=>p[0]))-1,maxx=Math.max(...points.map(p=>p[0]))+1,miny=Math.min(...points.map(p=>p[1]))-1,maxy=Math.max(...points.map(p=>p[1]))+1;
+ const width=maxx-minx+1;
+ const viewport=Math.min(1000,Math.max(280,document.documentElement.clientWidth-58));
+ const autoSize=Math.max(24,Math.min(52,Math.floor(viewport/width)));
+ const unit=fitToWidth?autoSize:Math.max(19,Math.min(90,Math.round(autoSize*replayZoom)));
+ document.documentElement.style.setProperty('--cell',unit+'px');
+ const div=getElement('map');div.style.gridTemplateColumns=`repeat(${width},var(--cell))`;div.innerHTML='';
+ const meeplesAt=new Map(meeples.map(m=>[m.pos,m]));
+ for(let y=miny;y<=maxy;y++) for(let x=minx;x<=maxx;x++){
+   const p=key(x,y),cell=surface.get(p),m=meeplesAt.get(p); const el=document.createElement('div'); el.className='sq';
+   if(cell){
+     if(cell.tile===0) el.classList.add('center-piece');
+     el.classList.add(cell.kind==='land'?`terrain-${cell.land}`:'temple');
+     el.style.cssText=tileStyle(p,surface);
+     const label=document.createElement('div'); label.className='cell-label'+((cell.kind==='shrine' || (cell.kind==='land'&&cell.tile===0))?' small':'');
+     label.textContent=cell.kind==='land'?cell.land:`${shrineNames[cell.shrine]}${cell.focus?'-'+cell.focus:''}`;
+     el.appendChild(label);
+     const ht=document.createElement('div'); ht.className='height-tag'; ht.textContent=`H${cell.height}`; el.appendChild(ht);
+     const ct=document.createElement('div'); ct.className='coord-tag'; ct.textContent=`${x},${y}`; el.appendChild(ct);
+   }else el.classList.add('empty');
+   if(m){
+     const badge=document.createElement('div');
+     badge.className=`meeple ${m.kind} owner${m.player}`;
+     badge.textContent=m.kind==='statue'?'像':m.kind==='worker'?'工':'祭';
+     badge.title=`玩家 ${m.player}（${playerColors[m.player]}）${meepleNames[m.kind]}`;
+     el.appendChild(badge);
+   }
+   el.title=`(${x},${y})${cell?`｜高度 ${cell.height}`:''}${cell?.kind==='shrine'?`｜${shrineNames[cell.shrine]}${cell.focus?'-'+cell.focus:''}`:''}${m?`｜玩家 ${m.player}${meepleNames[m.kind]}`:''}`;
+   div.appendChild(el);
+ }
+ getElement('moveLabel').textContent=ix?`第 ${last.round} 輪・玩家 ${last.player}・第 ${ix} / ${RECORD.moves.length} 步`:`開始配置（共 ${RECORD.moves.length} 步）`;
+ getElement('detail').textContent=last
+   ?`選取板塊 #${last.tile}，取得探索區石柱 ${last.market_stones}。
+放置高度：${last.height}，支撐石柱：${last.support_cost}。
+米寶行動：放置${meepleNames[last.meeple]}於 (${last.meeple_pos.join(',')})。${last.closed_existing?.length?`\n本步使既有雕像完成封閉：${last.closed_existing.map(([owner,pos])=>`玩家${owner+1}@(${pos[0]},${pos[1]})`).join('、')}`:''}`
+   :'初始中央板塊：左上土、右上草、左下水、右下岩。';
+ getElement('scores').innerHTML=stones.map((s,p)=>`<div class="chip">玩家 ${p+1}：<b>${s}</b> 石柱；目前總分 <b>${scoreInfo.fields[p].total}</b></div>`).join('');
+ const area=getElement('scoreBreakdown');
+ const labels=[['statue','雕像高度'],['height','高度聖殿'],['big','大塊聖殿'],['small','小塊聖殿'],['worker','工人聖殿'],['statue_shrine','雕像聖殿']];
+ area.innerHTML='';
+ scoreInfo.fields.forEach((f,idx)=>{
+   const card=document.createElement('div'); card.className='score-card';
+   let rows='';
+   for(const [k,name] of labels){ rows += `<tr><td>${name}</td><td>${f[k]}</td></tr>`; }
+   rows += `<tr><td>剩餘石柱</td><td>${f.stone}</td></tr>`;
+   rows += `<tr><td>最多石柱獎勵</td><td>${f.bonus}</td></tr>`;
+   rows += `<tr class="total-row"><td>總分</td><td>${f.total}</td></tr>`;
+   let notes='';
+   for(const [k,name] of labels){
+     const arr=scoreInfo.detail[idx][k];
+     if(arr.length) notes += `<li><b>${name}</b>：${arr.join('； ')}</li>`;
+   }
+   notes += `<li><b>剩餘石柱</b>：${scoreInfo.detail[idx].stone}</li>`;
+   notes += `<li><b>最多石柱獎勵</b>：${scoreInfo.detail[idx].bonus}</li>`;
+   card.innerHTML=`<h3>玩家 ${idx+1}（${playerColors[idx+1]}）</h3><table>${rows}</table><div class="subnote">工人數：${scoreInfo.nworkers[idx]}；雕像數：${scoreInfo.nstatues[idx]}</div><ul class="inline-list">${notes}</ul>`;
+   area.appendChild(card);
+ });
+}
+getElement('prev').onclick=()=>{r.value=Math.max(0,Number(r.value)-1);draw()};
+getElement('next').onclick=()=>{r.value=Math.min(RECORD.moves.length,Number(r.value)+1);draw()};
+getElement('first').onclick=()=>{r.value=0;draw()};
+r.oninput=draw;
+getElement('zoomout').onclick=()=>{fitToWidth=false;replayZoom=Math.max(0.5,replayZoom-0.3);draw()};
+getElement('zoomin').onclick=()=>{fitToWidth=false;replayZoom=Math.min(4,replayZoom+0.3);draw()};
+getElement('fit').onclick=()=>{fitToWidth=true;replayZoom=1;draw()};
+window.addEventListener('resize',draw);
+draw();
+</script></body></html>
