@@ -12,7 +12,7 @@ button:hover{background:#e5efea}
 #map{display:grid;gap:var(--gap);max-width:100%;overflow:auto;align-content:start;justify-content:start;background:#dfe7e0;padding:6px;border-radius:12px}
 .sq{width:var(--cell);height:var(--cell);box-sizing:border-box;position:relative;border:1px solid var(--line);text-align:center;overflow:hidden}
 .sq.empty{background:#f0f2ef;border:1px dashed #e3e8e1}
-.sq.center-piece{background:#efe8cf}
+.sq.center-piece{box-shadow:inset 0 0 0 1px rgba(72,72,55,.12)}
 .sq.temple{background:#ecd9b3}
 .sq.temple::after{content:"";position:absolute;inset:3px;border:1px solid rgba(126,94,23,.18);border-radius:8px;pointer-events:none}
 .terrain-土{background:#dbc6a4}.terrain-草{background:#afd09f}.terrain-岩{background:#b7bfc4}.terrain-水{background:#9ccae4}
