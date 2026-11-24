@@ -9,7 +9,7 @@
 .sq.land.legal::before{content:"";position:absolute;bottom:3px;right:3px;width:8px;height:8px;background:#25654f;border:1px solid white;border-radius:50%}
 .sq.land.ghost{outline:0;border-color:#b24c12;filter:brightness(1.06)}
 </style>
-<header><div><small>ORO BOARD GAME DESIGN</small><h1>馬丘比丘的奠基者</h1></div><button id="new">新對局</button></header><main><div id="players"></div><div class="layout"><section class="mapwrap"><div class="bar"><strong id="round"></strong><div><button id="minus" aria-label="縮小">−</button> <button id="center">置中</button> <button id="plus" aria-label="放大">＋</button></div></div><div class="viewport" id="vp"><div class="plane"><div class="grid" id="grid"></div></div></div></section><section class="panel"><div id="status" class="note"></div><div id="controls" aria-live="polite"></div><details><summary>玩法與計分</summary><p>拿取一片板塊及其石柱，選方向與落點，再放置一名米寶。地面擴建須側鄰大陸；上疊時至少一格直接壓在既有板塊上。另一格可從空地（第 0 層）用石柱撐起，每補一層支付 2 根石柱。若兩格下方都有板塊，須跨兩片不同板塊，高差同樣每層支付 2 根。例如一格壓在第 1 層中央板塊，另一格在空地，支付 2 根石柱即可蓋到第 2 層。所有米寶都不能被覆蓋。</p><p>雕像放在側鄰板塊的空地，得分是四鄰高度和。首次封閉時，建造者與雕像主人各得一柱；直接放入封閉區得一柱。祭司支付聖殿層數的石柱，工人獲得層數兩倍石柱。</p><p>祭壇以所在層數乘上效果。山巔看指定地貌最高層，疆域看最大相連格數加一，群域看區域數，工匠看自己的工人數加一，紀念看自己的雕像數。每兩柱得一分，最多柱者平分五分並捨去小數。</p></details><details><summary>對局紀錄</summary><ol id="log"></ol></details></section></div></main>
+<header><div><small>ORO BOARD GAME DESIGN</small><h1>馬丘比丘的奠基者</h1></div><button id="new">新對局</button></header><main><div id="players"></div><div class="layout"><section class="mapwrap"><div class="bar"><strong id="round"></strong><div><button id="minus" aria-label="縮小">−</button> <button id="center">置中</button> <button id="plus" aria-label="放大">＋</button></div></div><div class="viewport" id="vp"><div class="plane"><div class="grid" id="grid"></div></div></div></section><section class="panel"><div id="status" class="note"></div><div id="controls" aria-live="polite"></div><details><summary>玩法與計分</summary><p>拿取一片板塊及其石柱，選方向與落點，再放置一名米寶。地面擴建須側鄰大陸；上疊時至少一格直接壓在既有板塊上。另一格可從空地（第 0 層）用石柱撐起，每補一層支付 2 根石柱。若兩格下方都有板塊，須跨兩片不同板塊，高差同樣每層支付 2 根。例如一格壓在第 1 層中央板塊，另一格在空地，支付 2 根石柱即可蓋到第 2 層。所有米寶都不能被覆蓋。</p><p>雕像放在側鄰板塊的空地，得分是四鄰高度和。首次封閉時，建造者與雕像主人各得一柱；直接放入封閉區得一柱。祭司支付聖殿層數的石柱，工人獲得層數兩倍石柱。</p><p>祭壇以所在層數乘上效果。山巔看指定地貌最高層，疆域看最大相連格數加一，群域看區域數，工匠看自己的工人數加一，紀念看自己的雕像數。每兩柱得一分，剩餘石柱最多者額外獲得 6 分；若多人並列最多，每人各得 6 分。</p></details><details><summary>對局紀錄</summary><ol id="log"></ol></details></section></div></main>
 <dialog id="setup"><h2>建立新對局</h2><label>遊戲人數 <select id="count"><option>3</option><option>4</option><option>5</option></select></label><div id="seats" class="seats"></div><p class="note">玩家 1 持起始標記。同裝置的玩家依座位順序輪流操作。</p><div class="controls"><button id="start" class="primary">開始遊戲</button><button id="cancel">返回</button></div></dialog>
 <script id="game-rules">
 const terrain=['梯田','牧地','岩地','水域'], effects=['山巔','疆域','群域','工匠','紀念'];
@@ -67,8 +67,9 @@ function stats(g){return terrain.map((_,t)=>{let left=new Set(Object.keys(g.boar
  while(left.size){const k=left.values().next().value,q=[k];left.delete(k);groups++;for(let i=0;i<q.length;i++){highest=Math.max(highest,g.board[q[i]].h);for(const l of near(q[i]))if(left.delete(l))q.push(l)}largest=Math.max(largest,q.length)}return [highest,largest+1,groups]})}
 function effect(v,st,men){return v.e<3?st[v.t][v.e]:v.e===3?1+men.filter(m=>m.role==='worker').length:men.filter(m=>m.role==='statue').length}
 function statueValue(g,k){return near(k).reduce((a,l)=>a+(g.board[l]?.h||0),0)}
-function scores(g,st=stats(g)){const max=Math.max(...g.players.map(p=>p.p)),ties=g.players.filter(p=>p.p===max).length;
- return g.players.map((p,i)=>{let own=Object.entries(g.men).filter(([,m])=>m.owner===i),men=own.map(([,m])=>m),statue=0,shrine=0;for(const [k,m] of own){if(m.role==='statue')statue+=statueValue(g,k);if(m.role==='priest'){const c=g.board[k];shrine+=c.h*effect(c.v,st,men)}}const pillars=Math.floor(p.p/2),bonus=p.p===max?Math.floor(5/ties):0;return {statue,shrine,pillars,bonus,total:statue+shrine+pillars+bonus}})}
+function mostPillarsBonus(count,max){return count===max?6:0}
+function scores(g,st=stats(g)){const max=Math.max(...g.players.map(p=>p.p));
+ return g.players.map((p,i)=>{let own=Object.entries(g.men).filter(([,m])=>m.owner===i),men=own.map(([,m])=>m),statue=0,shrine=0;for(const [k,m] of own){if(m.role==='statue')statue+=statueValue(g,k);if(m.role==='priest'){const c=g.board[k];shrine+=c.h*effect(c.v,st,men)}}const pillars=Math.floor(p.p/2),bonus=mostPillarsBonus(p.p,max);return {statue,shrine,pillars,bonus,total:statue+shrine+pillars+bonus}})}
 function moves(g,r){const [x0,x1,y0,y1]=bounds(Object.keys(g.board)),ms=[];for(let x=x0-2;x<=x1+2;x++)for(let y=y0-2;y<=y1+2;y++){const m=placement(g,[x,y].join(','),r);if(m)ms.push(m)}return ms}
 function best(items,rate){let score=-Infinity,result;for(const item of items){let v=rate(item)+Math.random()*.85;if(v>score){score=v;result=item}}return result}
 function botStep(g){
@@ -112,8 +113,8 @@ function actionRatings(g,left){
    potential=fade*.26*near(a.k).filter(k=>!g.men[k]).length;
   }
   const stock=pillars.slice();stock[seat]+=change;
-  const max=Math.max(...stock),ties=stock.filter(p=>p===max).length;
-  const values=bases.map((v,i)=>v+reserve(stock[i],left)+(left<=1&&stock[i]===max?Math.floor(5/ties):0));
+  const max=Math.max(...stock);
+  const values=bases.map((v,i)=>v+reserve(stock[i],left)+(left<=1?mostPillarsBonus(stock[i],max):0));
   values[seat]+=points;
   const rating=rankValue(values,seat);rating.quality+=potential;
   return {...a,...rating};
