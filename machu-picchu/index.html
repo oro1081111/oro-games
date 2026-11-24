@@ -6,7 +6,7 @@
 .sq.land.legal::before{content:"";position:absolute;bottom:3px;right:3px;width:8px;height:8px;background:#25654f;border:1px solid white;border-radius:50%}
 .sq.land.ghost{outline:0;border-color:#b24c12;z-index:2;filter:brightness(1.06)}
 </style>
-<header><div><small>ORO BOARD GAME DESIGN</small><h1>馬丘比丘的奠基者</h1></div><button id="new">新對局</button></header><main><div id="players"></div><div class="layout"><section class="mapwrap"><div class="bar"><strong id="round"></strong><div><button id="minus" aria-label="縮小">−</button> <button id="center">置中</button> <button id="plus" aria-label="放大">＋</button></div></div><div class="viewport" id="vp"><div class="plane"><div class="grid" id="grid"></div></div></div></section><section class="panel"><div id="status" class="note"></div><div id="controls" aria-live="polite"></div><details><summary>玩法與計分</summary><p>拿取一片板塊及其石柱，選方向與落點，再放置一名米寶。地面擴建須側鄰大陸；堆疊須跨兩片不同板塊，兩側高差每層支付兩根石柱。所有米寶都不能被覆蓋。</p><p>雕像放在側鄰板塊的空地，得分是四鄰高度和。首次封閉時，建造者與雕像主人各得一柱；直接放入封閉區得一柱。祭司支付聖殿層數的石柱，工人獲得層數兩倍石柱。</p><p>祭壇以所在層數乘上效果。山巔看指定地貌最高層，疆域看最大相連格數加一，群域看區域數，工匠看自己的工人數加一，紀念看自己的雕像數。每兩柱得一分，最多柱者平分五分並捨去小數。</p></details><details><summary>對局紀錄</summary><ol id="log"></ol></details></section></div></main>
+<header><div><small>ORO BOARD GAME DESIGN</small><h1>馬丘比丘的奠基者</h1></div><button id="new">新對局</button></header><main><div id="players"></div><div class="layout"><section class="mapwrap"><div class="bar"><strong id="round"></strong><div><button id="minus" aria-label="縮小">−</button> <button id="center">置中</button> <button id="plus" aria-label="放大">＋</button></div></div><div class="viewport" id="vp"><div class="plane"><div class="grid" id="grid"></div></div></div></section><section class="panel"><div id="status" class="note"></div><div id="controls" aria-live="polite"></div><details><summary>玩法與計分</summary><p>拿取一片板塊及其石柱，選方向與落點，再放置一名米寶。地面擴建須側鄰大陸；上疊時至少一格直接壓在既有板塊上。另一格可從空地（第 0 層）用石柱撐起，每補一層支付 2 根石柱。若兩格下方都有板塊，須跨兩片不同板塊，高差同樣每層支付 2 根。例如一格壓在第 1 層中央板塊，另一格在空地，支付 2 根石柱即可蓋到第 2 層。所有米寶都不能被覆蓋。</p><p>雕像放在側鄰板塊的空地，得分是四鄰高度和。首次封閉時，建造者與雕像主人各得一柱；直接放入封閉區得一柱。祭司支付聖殿層數的石柱，工人獲得層數兩倍石柱。</p><p>祭壇以所在層數乘上效果。山巔看指定地貌最高層，疆域看最大相連格數加一，群域看區域數，工匠看自己的工人數加一，紀念看自己的雕像數。每兩柱得一分，最多柱者平分五分並捨去小數。</p></details><details><summary>對局紀錄</summary><ol id="log"></ol></details></section></div></main>
 <dialog id="setup"><h2>建立新對局</h2><label>遊戲人數 <select id="count"><option>3</option><option>4</option><option>5</option></select></label><div id="seats" class="seats"></div><p class="note">玩家 1 持起始標記。同裝置的玩家依座位順序輪流操作。</p><div class="controls"><button id="start" class="primary">開始遊戲</button><button id="cancel">返回</button></div></dialog>
 <script>
 const terrain=['梯田','牧地','岩地','水域'], effects=['山巔','疆域','群域','工匠','紀念'];
@@ -34,8 +34,9 @@ function take(g,i){if(g.phase!=='take'||!g.market[i])return false;g.hand=g.marke
 function placement(g,k,r){
  const b=g.board,l=near(k)[r],a=b[k],c=b[l];if(!l||g.men[k]||g.men[l])return null;
  if(!a&&!c){if(![...near(k),...near(l)].some(t=>b[t]))return null;return {k,l,r,h:1,cost:0}}
- if(!a||!c||a.id===c.id)return null;
- const cost=2*Math.abs(a.h-c.h);return cost<=g.players[g.seat].p?{k,l,r,h:1+Math.max(a.h,c.h),cost}:null;
+ if(a && c && a.id===c.id)return null;
+ const firstHeight=a?.h ?? 0, secondHeight=c?.h ?? 0;
+ const cost=2*Math.abs(firstHeight-secondHeight);return cost<=g.players[g.seat].p?{k,l,r,h:1+Math.max(firstHeight,secondHeight),cost}:null;
 }
 function exterior(b){
  const [x0,x1,y0,y1]=bounds(Object.keys(b)),start=[x0-1,y0-1].join(','),seen=new Set([start]),q=[start];
