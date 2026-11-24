@@ -11,7 +11,7 @@
 </style>
 <header><div><small>ORO BOARD GAME DESIGN</small><h1>馬丘比丘的奠基者</h1></div><button id="new">新對局</button></header><main><div id="players"></div><div class="layout"><section class="mapwrap"><div class="bar"><strong id="round"></strong><div><button id="minus" aria-label="縮小">−</button> <button id="center">置中</button> <button id="plus" aria-label="放大">＋</button></div></div><div class="viewport" id="vp"><div class="plane"><div class="grid" id="grid"></div></div></div></section><section class="panel"><div id="status" class="note"></div><div id="controls" aria-live="polite"></div><details><summary>玩法與計分</summary><p>拿取一片板塊及其石柱，選方向與落點，再放置一名米寶。地面擴建須側鄰大陸；上疊時至少一格直接壓在既有板塊上。另一格可從空地（第 0 層）用石柱撐起，每補一層支付 2 根石柱。若兩格下方都有板塊，須跨兩片不同板塊，高差同樣每層支付 2 根。例如一格壓在第 1 層中央板塊，另一格在空地，支付 2 根石柱即可蓋到第 2 層。所有米寶都不能被覆蓋。</p><p>雕像放在側鄰板塊的空地，得分是四鄰高度和。首次封閉時，建造者與雕像主人各得一柱；直接放入封閉區得一柱。祭司支付聖殿層數的石柱，工人獲得層數兩倍石柱。</p><p>祭壇以所在層數乘上效果。山巔看指定地貌最高層，疆域看最大相連格數加一，群域看區域數，工匠看自己的工人數加一，紀念看自己的雕像數。每兩柱得一分，最多柱者平分五分並捨去小數。</p></details><details><summary>對局紀錄</summary><ol id="log"></ol></details></section></div></main>
 <dialog id="setup"><h2>建立新對局</h2><label>遊戲人數 <select id="count"><option>3</option><option>4</option><option>5</option></select></label><div id="seats" class="seats"></div><p class="note">玩家 1 持起始標記。同裝置的玩家依座位順序輪流操作。</p><div class="controls"><button id="start" class="primary">開始遊戲</button><button id="cancel">返回</button></div></dialog>
-<script>
+<script id="game-rules">
 const terrain=['梯田','牧地','岩地','水域'], effects=['山巔','疆域','群域','工匠','紀念'];
 const dirs=[[1,0],[0,1],[-1,0],[0,-1]];
 const coord=k=>k.split(',').map(Number);
@@ -67,7 +67,7 @@ function stats(g){return terrain.map((_,t)=>{let left=new Set(Object.keys(g.boar
  while(left.size){const k=left.values().next().value,q=[k];left.delete(k);groups++;for(let i=0;i<q.length;i++){highest=Math.max(highest,g.board[q[i]].h);for(const l of near(q[i]))if(left.delete(l))q.push(l)}largest=Math.max(largest,q.length)}return [highest,largest+1,groups]})}
 function effect(v,st,men){return v.e<3?st[v.t][v.e]:v.e===3?1+men.filter(m=>m.role==='worker').length:men.filter(m=>m.role==='statue').length}
 function statueValue(g,k){return near(k).reduce((a,l)=>a+(g.board[l]?.h||0),0)}
-function scores(g){const st=stats(g),max=Math.max(...g.players.map(p=>p.p)),ties=g.players.filter(p=>p.p===max).length;
+function scores(g,st=stats(g)){const max=Math.max(...g.players.map(p=>p.p)),ties=g.players.filter(p=>p.p===max).length;
  return g.players.map((p,i)=>{let own=Object.entries(g.men).filter(([,m])=>m.owner===i),men=own.map(([,m])=>m),statue=0,shrine=0;for(const [k,m] of own){if(m.role==='statue')statue+=statueValue(g,k);if(m.role==='priest'){const c=g.board[k];shrine+=c.h*effect(c.v,st,men)}}const pillars=Math.floor(p.p/2),bonus=p.p===max?Math.floor(5/ties):0;return {statue,shrine,pillars,bonus,total:statue+shrine+pillars+bonus}})}
 function moves(g,r){const [x0,x1,y0,y1]=bounds(Object.keys(g.board)),ms=[];for(let x=x0-2;x<=x1+2;x++)for(let y=y0-2;y<=y1+2;y++){const m=placement(g,[x,y].join(','),r);if(m)ms.push(m)}return ms}
 function best(items,rate){let score=-Infinity,result;for(const item of items){let v=rate(item)+Math.random()*.85;if(v>score){score=v;result=item}}return result}
@@ -76,6 +76,101 @@ function botStep(g){
  else if(g.phase==='build'){const m=best(dirs.flatMap((_,r)=>moves(g,r)),m=>{let v=m.h*1.4-m.cost*.65;for(const k of [m.k,m.l])for(const l of near(k)){const man=g.men[l];if(man?.role==='statue')v+=(man.owner===g.seat?1.2:-.8)*(m.h-(g.board[k]?.h||0));else if(g.board[l])v+=.16}return v});build(g,m.k,m.r)}
  else if(g.phase==='act'){const st=stats(g),men=Object.values(g.men).filter(m=>m.owner===g.seat),a=best(actions(g),a=>{const c=g.board[a.k];if(a.role==='statue')return statueValue(g,a.k)+.8;if(a.role==='worker')return c.h*(g.players[g.seat].p<3?2.5:1.15);return c.h*(effect(c.v,st,men)-.45)+.8});act(g,a.k,a.role)}
 }
+// Each trial owns its resources and enclosure flags. Tiles themselves are immutable.
+function trial(g){
+ return {...g,board:{...g.board},men:Object.fromEntries(Object.entries(g.men).map(([k,m])=>[k,{...m}])),
+  players:g.players.map(p=>({...p})),market:g.market.slice()};
+}
+function reserve(p,left){
+ if(!left)return Math.floor(p/2);
+ return .5*p+Math.min(p,5)*.36*Math.min(1,left/2);
+}
+function rankValue(values,seat){
+ const own=values[seat];let rank=0,closeness=0;
+ for(let i=0;i<values.length;i++)if(i!==seat){
+  const diff=own-values[i];
+  rank+=diff>1e-8?2:Math.abs(diff)<1e-8?1:0;
+  closeness+=1/(1+Math.exp(-diff/4));
+ }
+ return {rank,quality:closeness*6+own*.09};
+}
+function actionRatings(g,left){
+ const seat=g.seat,st=stats(g),totals=scores(g,st),men=Object.values(g.men).filter(m=>m.owner===seat);
+ const open=exterior(g.board),pillars=g.players.map(p=>p.p);
+ const bases=totals.map(t=>t.statue+t.shrine);
+ const synergies=[0,0,0,0,0];
+ for(const [k,m] of Object.entries(g.men))if(m.owner===seat&&m.role==='priest')synergies[g.board[k].v.e]+=g.board[k].h;
+ const fade=Math.min(1,left/3);
+ return actions(g).map(a=>{
+  const cell=g.board[a.k],h=cell?.h||0;let change=0,points=0,potential=0;
+  if(a.role==='worker'){change=2*h;points=synergies[3]}
+  else if(a.role==='priest'){
+   change=-h;points=h*effect(cell.v,st,men);
+   potential=fade*h*[.4,.35,.18,.28,.55][cell.v.e];
+  }else{
+   change=Number(!open.has(a.k));points=statueValue(g,a.k)+synergies[4];
+   potential=fade*.26*near(a.k).filter(k=>!g.men[k]).length;
+  }
+  const stock=pillars.slice();stock[seat]+=change;
+  const max=Math.max(...stock),ties=stock.filter(p=>p===max).length;
+  const values=bases.map((v,i)=>v+reserve(stock[i],left)+(left<=1&&stock[i]===max?Math.floor(5/ties):0));
+  values[seat]+=points;
+  const rating=rankValue(values,seat);rating.quality+=potential;
+  return {...a,...rating};
+ });
+}
+const comparePlan=(a,b)=>b.rank-a.rank||b.quality-a.quality;
+function shortlist(list,plan,limit){
+ if(list.length===limit&&comparePlan(plan,list[list.length-1])>=0)return;
+ list.push(plan);list.sort(comparePlan);if(list.length>limit)list.pop();
+}
+function visiblePlans(g,left,limit,future=false){
+ const plans=[],seen=new Set();
+ const cards=g.phase==='take'?g.market.map((_,i)=>i):[-1];
+ for(const card of cards){
+  const hand=trial(g);if(card>=0){
+   const signature=JSON.stringify(hand.market[card]);if(seen.has(signature))continue;
+   seen.add(signature);take(hand,card);
+  }
+  let placements=hand.phase==='act'?[null]:dirs.flatMap((_,r)=>moves(hand,r));
+  if(hand.phase!=='act'&&hand.hand.tile[0]===hand.hand.tile[1])placements=placements.filter(m=>m.r<2);
+  if(future&&placements.length>10){
+   // Limit only the speculative next turn. Keep both stacking and expansion candidates.
+   const priority=m=>m.h-.32*m.cost+.5*near(m.k).filter(k=>hand.men[k]?.owner===hand.seat).length;
+   placements.sort((a,b)=>priority(b)-priority(a));
+   placements=[...new Set([...placements.slice(0,7),...placements.filter(m=>m.h===1).slice(0,3)])];
+  }
+  for(const m of placements){
+   const board=m?trial(hand):hand;if(m)build(board,m.k,m.r);
+   const ratings=actionRatings(board,left);
+   for(const a of ratings)shortlist(plans,{card,m,a,rank:a.rank,quality:a.quality},limit);
+  }
+ }
+ return plans;
+}
+function expertPlan(g){
+ const left=10-g.players.length-g.round;
+ const finalists=visiblePlans(g,left,6);
+ if(!finalists.length)throw Error('找不到合法的高手行動');
+ const leading=finalists.filter(p=>p.rank===finalists[0].rank&&p.quality>=finalists[0].quality-1.2);
+ if(left>0)for(const p of leading.slice(0,3)){
+  const next=trial(g);
+  if(p.card>=0)take(next,p.card);
+  if(p.m)build(next,p.m.k,p.m.r);
+  // Settle through normal rules, with no hidden refill. Model only this player's next opportunity.
+  next.history=[];next.market=next.market.map(c=>({...c}));next.decks=[[],[]];
+  act(next,p.a.k,p.a.role);
+  next.seat=g.seat;next.round=g.round+1;next.phase='take';
+  const continuation=visiblePlans(next,left-1,1,true)[0];
+  if(continuation)p.quality+=.22*Math.max(0,Math.min(4,continuation.quality-p.quality));
+ }
+ leading.sort(comparePlan);
+ const close=leading.filter(p=>p.quality>=leading[0].quality-(left?.7:.000001));
+ const weights=close.map(p=>Math.exp((p.quality-close[0].quality)*4));
+ let roll=Math.random()*weights.reduce((a,b)=>a+b,0);
+ return close.find((p,i)=>(roll-=weights[i])<=0)||close[0];
+}
+</script><script>
 const $=id=>document.getElementById(id),colors=['#a83e37','#32618b','#527437','#9a611e','#79518a'],roles={statue:'雕像',priest:'祭司',worker:'工人'},names=i=>'玩家 '+(i+1);
 const title=v=>typeof v==='number'?terrain[v]:effects[v.e]+(v.t===undefined?'':'・'+terrain[v.t]);
 function face(v){return '<span class="face '+(typeof v==='number'?'t'+v:'temple')+'">'+title(v).replace('・','<br>')+'</span>'}
@@ -105,9 +200,9 @@ function frontFace(layers,k,h,frontHeight,step){
 }
 function render(){
  clearTimeout(timer);const human=!g.players[g.seat].bot,end=g.phase==='end',c=$('controls');
- $('players').innerHTML=g.players.map((p,i)=>'<div class="player '+(!end&&i===g.seat?'current':'')+'" style="--ink:'+colors[i]+'"><b class="dot">●</b> '+names(i)+(p.bot?' ⚙':'')+' · '+p.p+' 柱</div>').join('');
+ $('players').innerHTML=g.players.map((p,i)=>'<div class="player '+(!end&&i===g.seat?'current':'')+'" style="--ink:'+colors[i]+'"><b class="dot">●</b> '+names(i)+(p.bot==='expert'?'・高手':p.bot?' ⚙':'')+' · '+p.p+' 柱</div>').join('');
  $('round').textContent='第 '+g.round+' / '+(10-g.players.length)+' 輪';
- $('status').textContent=(end?'建造完成':names(g.seat)+(human?' 的回合':'・電腦行動中'))+(saveFailed?'（瀏覽器無法儲存進度）':'');
+ $('status').textContent=(end?'建造完成':names(g.seat)+(human?' 的回合':g.players[g.seat].bot==='expert'?(g.expertPlan?'・高手行動中':'・高手思考中'):'・電腦行動中'))+(saveFailed?'（瀏覽器無法儲存進度）':'');
  $('log').innerHTML=g.history.map(a=>'<li>'+names(a.seat)+' 在 '+a.build.k+' 建至第 '+a.build.h+' 層，於 '+a.k+' 放置'+roles[a.role]+'</li>').reverse().join('');
  const valid=new Map();
  if(g.phase==='build')for(const m of moves(g,rot))valid.set(m.k,m);
@@ -139,7 +234,35 @@ function render(){
  ].join(';');
  html+='<button data-k="'+k+'" aria-label="'+k+' '+label+(v?' 第'+v.h+'層':' 空地')+'" '+(active?'':'tabindex="-1"')+' class="sq '+(show===undefined?'':'land '+(typeof show==='number'?'t'+show:'temple'))+(active?' legal':'')+(idx>=0||sel===k?' ghost':'')+(g.phase==='act'&&g.last&&[g.last.k,g.last.l].includes(k)?' recent':'')+'" style="--depth:'+(height*step)+'px;' +outline+'">'+frontFace(layers,k,height,frontHeight,step)+'<b>'+label.replace('・','<br>')+'</b>'+(v||idx>=0?'<span class="h">'+(idx>=0?preview.h:v.h)+'</span>':'')+(man?'<span class="man" style="--ink:'+colors[man.owner]+'">'+(man.owner+1)+roles[man.role][0]+'</span>':'')+'</button>'}
  grid.innerHTML=html;
- if(!human&&!end&&!$('setup').open)timer=setTimeout(()=>{botStep(g);resetPick();persist();render()},550);
+ if(!human&&!end&&!$('setup').open)timer=setTimeout(computerTurn,550);
+}
+let activeSearch=null, workerURL;
+function stopSearch(){
+ if(activeSearch){activeSearch.terminate();activeSearch=null}
+}
+function computerTurn(){
+ if(g.players[g.seat].bot!=='expert'){botStep(g)}
+ else if(g.expertPlan){
+  const p=g.expertPlan;
+  const ok=g.phase==='take'?take(g,p.card):g.phase==='build'?build(g,p.m.k,p.m.r):act(g,p.a.k,p.a.role);
+  if(!ok||g.phase==='take'||g.phase==='end')delete g.expertPlan;
+ }else{
+  if(activeSearch)return;
+  const publicState={...g,decks:[[],[]]};
+  function received(plan){stopSearch();g.expertPlan=plan;computerTurn()}
+  try{
+   if(!workerURL){
+    const source=$('game-rules').textContent+'\nonmessage=e=>postMessage(expertPlan(e.data));';
+    workerURL=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));
+   }
+   const worker=new Worker(workerURL);activeSearch=worker;
+   worker.onmessage=e=>{if(activeSearch===worker)received(e.data)};
+   worker.onerror=()=>{if(activeSearch===worker)received(expertPlan(publicState))};
+   worker.postMessage(publicState);
+  }catch{received(expertPlan(publicState))}
+  return;
+ }
+ resetPick();persist();render();
 }
 function resetPick(){sel=null;role='statue';rot=0}
 $('controls').onclick=e=>{const btn=e.target.closest('button');if(!btn||g.players[g.seat].bot)return;
@@ -152,9 +275,9 @@ $('controls').onclick=e=>{const btn=e.target.closest('button');if(!btn||g.player
 $('grid').onclick=e=>{const btn=e.target.closest('.legal');if(btn){sel=btn.dataset.k;render()}};
 function center(){const v=$('vp');v.scrollLeft=(v.scrollWidth-v.clientWidth)/2;v.scrollTop=(v.scrollHeight-v.clientHeight)/2}
 $('center').onclick=center;for(const [id,d] of [['plus',6],['minus',-6]])$(id).onclick=()=>{size=Math.min(76,Math.max(30,size+d));render();center()};
-function seats(){const old=[...$('seats').querySelectorAll('select')].map(x=>x.value);$('seats').innerHTML=Array.from({length:+$('count').value},(_,i)=>'<label>'+names(i)+'<select><option value="human">本機玩家</option><option value="bot">電腦</option></select></label>').join('');[...$('seats').querySelectorAll('select')].forEach((s,i)=>s.value=old[i]??(i?'bot':'human'))}
-function openSetup(){clearTimeout(timer);seats();$('setup').showModal()}
+function seats(){const old=[...$('seats').querySelectorAll('select')].map(x=>x.value);$('seats').innerHTML=Array.from({length:+$('count').value},(_,i)=>'<label>'+names(i)+'<select><option value="human">本機玩家</option><option value="bot">電腦</option><option value="expert">高手</option></select></label>').join('');[...$('seats').querySelectorAll('select')].forEach((s,i)=>s.value=old[i]??(i?'bot':'human'))}
+function openSetup(){clearTimeout(timer);stopSearch();seats();$('setup').showModal()}
 $('count').onchange=seats;$('new').onclick=openSetup;$('cancel').onclick=()=>$('setup').close();$('setup').onclose=render;
-$('start').onclick=()=>{g=setup([...$('seats').querySelectorAll('select')].map(s=>s.value==='bot'));resetPick();persist();$('setup').close();render();center()};
+$('start').onclick=()=>{g=setup([...$('seats').querySelectorAll('select')].map(s=>s.value==='expert'?'expert':s.value==='bot'));resetPick();persist();$('setup').close();render();center()};
 render();center();if(fresh)openSetup();
 </script></html>
