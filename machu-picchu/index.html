@@ -2,9 +2,12 @@
 *{box-sizing:border-box}body{margin:0;color:#203c34;background:#eef1e8;font:16px/1.45 system-ui,sans-serif}button,select{font:inherit;color:inherit;background:#fff;border:1px solid #b6c7bc;border-radius:9px;padding:9px 13px;cursor:pointer}button:disabled{opacity:.45;cursor:default}button:hover:enabled{border-color:#406954}button.on,.primary{background:#1b5544;color:white}header{background:#143f34;color:#f8f5df;padding:14px max(4vw,16px);display:flex;gap:10px;align-items:center;justify-content:space-between}h1{font: bold clamp(18px,3vw,27px) serif;margin:0}header small{display:block;font:10px/1.5 monospace;letter-spacing:2px;color:#c6d6b9}main{max-width:1280px;margin:auto;padding:16px}#players{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.player{padding:5px 10px;border-bottom:3px solid transparent;font-size:14px}.current{background:white;border-color:var(--ink);border-radius:6px}.dot{color:var(--ink)}.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,340px);gap:14px}.panel,.mapwrap{min-width:0;border-radius:16px;background:#fff;box-shadow:0 3px 15px #18483412}.bar{display:flex;justify-content:space-between;padding:10px 14px;align-items:center;gap:5px}.bar button{padding:5px 12px}.viewport{height:clamp(350px,65vh,740px);overflow:auto;overscroll-behavior:contain;background-color:#e1e9d9;background-image:repeating-radial-gradient(ellipse at 13% 10%,transparent 0 24px,#7a987617 25px 26px,transparent 27px 40px);border-radius:0 0 16px 16px}.plane{min-width:100%;min-height:100%;width:max-content;display:grid;place-items:center;padding:24px}.grid{display:grid;gap:0;align-content:center}.sq{position:relative;width:var(--size);height:var(--size);border-radius:4px;padding:0;border:1px solid #627e6e24;background:#ffffff18;overflow:visible;display:grid;place-content:center;line-height:1.1}.land{border-color:#435f4d66;box-shadow:0 var(--depth) 0 #776c50;transform:translateY(calc(-1 * var(--depth)));font-weight:700}.sq b{font-size:clamp(10px, .85em,14px);pointer-events:none}.h{position:absolute;top:1px;right:2px;font:10px monospace}.t0{background:repeating-linear-gradient(15deg,#e6ba76 0 6px,#dcaa62 7px 8px)}.t1{background:repeating-linear-gradient(-36deg,#b3ce84 0 10px,#a6c579 11px 12px)}.t2{background:linear-gradient(145deg,#c9c6af,#aaa78f)}.t3{background:repeating-linear-gradient(-8deg,#95ccd2 0 8px,#a9d8d8 9px 11px)}.temple{background:#eee0b9;color:#624a2f}.legal{border:2px dashed #518269}.ghost{outline:3px solid #d46d1e;outline-offset:-2px;z-index:2}.man{position:absolute;bottom:1px;left:1px;color:white;background:var(--ink);font-size:11px;padding:2px 3px;border-radius:5px}.recent{animation:rise .45s ease-out}@keyframes rise{from{translate:0 -10px;opacity:.45}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}.panel{padding:18px;height:fit-content}h2{font: bold 21px/1.4 serif;margin:0 0 9px}p{margin:8px 0 13px}.market{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{padding:8px 5px;display:grid;gap:4px}.pair{display:flex;justify-content:center}.face{display:inline-grid;align-content:center;font-weight:bold;min-height:38px;min-width:43px;font-size:13px;color:#263d31;border:1px solid #0002}.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.note{font-size:14px;color:#51645a}.action{margin-top:12px}dialog{border:0;border-radius:16px;padding:22px;max-width:min(520px,94vw);max-height:90vh;color:inherit}dialog::backdrop{background:#123c32a8}.seats{display:grid;gap:7px;margin:12px 0}.seats label{display:flex;gap:25px;align-items:center}table{border-collapse:collapse;font-size:14px;width:100%}td,th{padding:5px 2px;text-align:center;border-bottom:1px solid #ddd}details{margin-top:12px;font-size:14px}summary{cursor:pointer}#status{font-weight:bold}.hint{min-height:1.4em}button:focus-visible,select:focus-visible{outline:3px solid #ab571d}
 @media(max-width:760px){main{padding:8px}.layout{grid-template-columns:1fr;gap:8px}.viewport{height:clamp(230px,40dvh,430px)}#players{gap:1px;margin-bottom:5px}.player{font-size:12px;padding:4px}.panel{padding:12px}.market{grid-template-columns:repeat(4,1fr);gap:4px}.face{min-width:0;flex:1;font-size:11px}.card{padding:4px 2px}.bar{padding:6px 8px}header{padding:8px 12px}.panel h2{font-size:18px}}
 .sq.land{border-style:solid;border-color:#615e49;box-shadow:none;z-index:1}
-.sq.land::after{content:"";position:absolute;top:calc(100% + 2px);height:var(--side-depth);background:#776c50;pointer-events:none;z-index:-1;left:calc(0px - var(--left-edge,0px));right:calc(0px - var(--right-edge,0px))}
+.front-face{position:absolute;display:block;top:calc(100% + var(--south-edge));left:calc(0px - var(--left-edge));right:calc(0px - var(--right-edge));pointer-events:none}
+.front-face i{display:block}
+.tile-rim{background:linear-gradient(#a88c65,#7d6951);box-shadow:inset 0 -0.75px #524839}
+.pillar-rim{background:linear-gradient(to right,transparent 16%,#786f61 16%,#b4ab97 20%,#a49883 30%,#746957 34%,transparent 34% 66%,#786f61 66%,#b4ab97 70%,#a49883 80%,#746957 84%,transparent 84%)}
 .sq.land.legal::before{content:"";position:absolute;bottom:3px;right:3px;width:8px;height:8px;background:#25654f;border:1px solid white;border-radius:50%}
-.sq.land.ghost{outline:0;border-color:#b24c12;z-index:2;filter:brightness(1.06)}
+.sq.land.ghost{outline:0;border-color:#b24c12;filter:brightness(1.06)}
 </style>
 <header><div><small>ORO BOARD GAME DESIGN</small><h1>馬丘比丘的奠基者</h1></div><button id="new">新對局</button></header><main><div id="players"></div><div class="layout"><section class="mapwrap"><div class="bar"><strong id="round"></strong><div><button id="minus" aria-label="縮小">−</button> <button id="center">置中</button> <button id="plus" aria-label="放大">＋</button></div></div><div class="viewport" id="vp"><div class="plane"><div class="grid" id="grid"></div></div></div></section><section class="panel"><div id="status" class="note"></div><div id="controls" aria-live="polite"></div><details><summary>玩法與計分</summary><p>拿取一片板塊及其石柱，選方向與落點，再放置一名米寶。地面擴建須側鄰大陸；上疊時至少一格直接壓在既有板塊上。另一格可從空地（第 0 層）用石柱撐起，每補一層支付 2 根石柱。若兩格下方都有板塊，須跨兩片不同板塊，高差同樣每層支付 2 根。例如一格壓在第 1 層中央板塊，另一格在空地，支付 2 根石柱即可蓋到第 2 層。所有米寶都不能被覆蓋。</p><p>雕像放在側鄰板塊的空地，得分是四鄰高度和。首次封閉時，建造者與雕像主人各得一柱；直接放入封閉區得一柱。祭司支付聖殿層數的石柱，工人獲得層數兩倍石柱。</p><p>祭壇以所在層數乘上效果。山巔看指定地貌最高層，疆域看最大相連格數加一，群域看區域數，工匠看自己的工人數加一，紀念看自己的雕像數。每兩柱得一分，最多柱者平分五分並捨去小數。</p></details><details><summary>對局紀錄</summary><ol id="log"></ol></details></section></div></main>
 <dialog id="setup"><h2>建立新對局</h2><label>遊戲人數 <select id="count"><option>3</option><option>4</option><option>5</option></select></label><div id="seats" class="seats"></div><p class="note">玩家 1 持起始標記。同裝置的玩家依座位順序輪流操作。</p><div class="controls"><button id="start" class="primary">開始遊戲</button><button id="cancel">返回</button></div></dialog>
@@ -80,6 +83,26 @@ const key='oro.machu.game.v1';let g,rot=0,sel=null,role='statue',size=46,timer,s
 try{g=JSON.parse(localStorage.getItem(key))}catch{}let fresh=!g;if(!g)g=setup([false,true,true]);
 function persist(){try{localStorage.setItem(key,JSON.stringify(g));saveFailed=false}catch{saveFailed=true}}
 function selectedAction(){return actions(g).find(a=>a.k===sel&&a.role===role)}
+// A recorded building move identifies the solid tile at that level.
+function tileLayers(g,preview){
+ const layers=new Map();
+ function record(k,h){if(!layers.has(k))layers.set(k,new Set());layers.get(k).add(h)}
+ for(const k of ['0,0','1,0','0,1','1,1'])record(k,1);
+ function add(m){if(m){record(m.k,m.h);record(m.l,m.h)}}
+ for(const turn of g.history)add(turn.build);
+ if(g.phase==='act')add(g.last);
+ add(preview);
+ return layers;
+}
+function frontFace(layers,k,h,frontHeight,step){
+ if(frontHeight>=h)return '';
+ let strips='';
+ for(let level=h;level>frontHeight;level--){
+  const solid=layers.get(k)?.has(level);
+  strips+='<i class="'+(solid?'tile-rim':'pillar-rim')+'" style="height:'+step+'px"></i>';
+ }
+ return '<span aria-hidden="true" class="front-face">'+strips+'</span>';
+}
 function render(){
  clearTimeout(timer);const human=!g.players[g.seat].bot,end=g.phase==='end',c=$('controls');
  $('players').innerHTML=g.players.map((p,i)=>'<div class="player '+(!end&&i===g.seat?'current':'')+'" style="--ink:'+colors[i]+'"><b class="dot">●</b> '+names(i)+(p.bot?' ⚙':'')+' · '+p.p+' 柱</div>').join('');
@@ -94,19 +117,27 @@ function render(){
  if(g.phase==='build'){const m=valid.get(sel);c.innerHTML='<h2>放置板塊</h2><div class="controls"><span class="pair">'+g.hand.tile.map(face).join('')+'</span><button id="rotate">旋轉 '+['→','↓','←','↑'][rot]+'</button></div><p class="hint">'+(m?'第 '+m.h+' 層 · 支付 '+m.cost+' 石柱':'點虛線空地或帶綠點的板塊放第一格，箭頭指向第二格。')+'</p><button class="primary" id="confirm" '+(m&&human?'':'disabled')+'>確認建造</button>'}
  if(g.phase==='act'){const all=actions(g);c.innerHTML='<h2>放置米寶</h2><div class="controls">'+Object.entries(roles).map(([r,name])=>'<button data-role="'+r+'" class="'+(r===role?'on':'')+'" '+(!human||!all.some(a=>a.role===r)?'disabled':'')+'>'+name+'</button>').join('')+'</div><p class="hint">'+(valid.has(sel)?(role==='statue'?'目前相鄰高度合計 '+statueValue(g,sel)+' 分':role==='worker'?'獲得 '+2*g.board[sel].h+' 石柱':'支付 '+g.board[sel].h+' 石柱'):(role==='statue'?'點選與板塊側鄰的空地。':'點選任一座空置聖殿。'))+'</p><button id="confirm" class="primary" '+(human&&valid.has(sel)?'':'disabled')+'>確認放置'+roles[role]+'</button>'}
  const b=g.board,[x0,x1,y0,y1]=bounds(Object.keys(b)),grid=$('grid');grid.style.setProperty('--size',size+'px');grid.style.gridTemplateColumns='repeat('+(x1-x0+5)+',var(--size))';
- let html='';for(let y=y0-2;y<=y1+2;y++)for(let x=x0-2;x<=x1+2;x++){const k=[x,y].join(','),v=b[k],man=g.men[k],active=human&&valid.has(k),preview=g.phase==='build'&&valid.get(sel),idx=preview?(k===sel?0:k===preview.l?1:-1):-1;
+ const preview=g.phase==='build'&&valid.get(sel);
+ const previewCovers=n=>preview&&(n===preview.k||n===preview.l);
+ const layers=tileLayers(g,preview);
+ // Keep all visible levels proportional while reserving most of a cell for its face.
+ const maxHeight=Math.max(preview?.h||0,...Object.values(b).map(cell=>cell.h));
+ const step=Math.min(size*.085,size*.55/maxHeight);
+ let html='';for(let y=y0-2;y<=y1+2;y++)for(let x=x0-2;x<=x1+2;x++){const k=[x,y].join(','),v=b[k],man=g.men[k],active=human&&valid.has(k),idx=preview?(k===sel?0:k===preview.l?1:-1):-1;
  const show=idx>=0?g.hand.tile[idx]:v?.v,label=show===undefined?'':title(show);
  // Only visible edges of a physical tile receive an outline.
- const previewCovers=n=>preview&&(n===preview.k||n===preview.l);
+ const height=idx>=0?preview.h:(v?.h||0);
+ const frontKey=[x,y+1].join(',');
+ const frontHeight=previewCovers(frontKey)?preview.h:(b[frontKey]?.h||0);
  const edges=near(k).map(n=>idx>=0?!previewCovers(n):previewCovers(n)||b[n]?.id!==v?.id);
  const [east,south,west,north]=edges;
  const outline=show===undefined?'':[
   'border-width:'+ [north,east,south,west].map(edge=>edge?'2px':'0').join(' '),
-  'border-radius:'+ [north&&west,north&&east,south&&east,south&&west].map(corner=>corner?'5px':'0').join(' '),
+  'border-radius:'+ [north&&west,north&&east,south&&east,south&&west].map(corner=>corner?'2px':'0').join(' '),
   '--left-edge:'+(west?'2px':'0px'), '--right-edge:'+(east?'2px':'0px'),
-  '--side-depth:'+(south?'var(--depth)':'0px')
+  '--south-edge:'+(south?'2px':'0px'), 'z-index:'+(2+height)
  ].join(';');
- html+='<button data-k="'+k+'" aria-label="'+k+' '+label+(v?' 第'+v.h+'層':' 空地')+'" '+(active?'':'tabindex="-1"')+' class="sq '+(show===undefined?'':'land '+(typeof show==='number'?'t'+show:'temple'))+(active?' legal':'')+(idx>=0||sel===k?' ghost':'')+(g.phase==='act'&&g.last&&[g.last.k,g.last.l].includes(k)?' recent':'')+'" style="--depth:'+Math.min(8,(idx>=0?preview.h:v?.h||0)*2)+'px;' +outline+'"><b>'+label.replace('・','<br>')+'</b>'+(v||idx>=0?'<span class="h">'+(idx>=0?preview.h:v.h)+'</span>':'')+(man?'<span class="man" style="--ink:'+colors[man.owner]+'">'+(man.owner+1)+roles[man.role][0]+'</span>':'')+'</button>'}
+ html+='<button data-k="'+k+'" aria-label="'+k+' '+label+(v?' 第'+v.h+'層':' 空地')+'" '+(active?'':'tabindex="-1"')+' class="sq '+(show===undefined?'':'land '+(typeof show==='number'?'t'+show:'temple'))+(active?' legal':'')+(idx>=0||sel===k?' ghost':'')+(g.phase==='act'&&g.last&&[g.last.k,g.last.l].includes(k)?' recent':'')+'" style="--depth:'+(height*step)+'px;' +outline+'">'+frontFace(layers,k,height,frontHeight,step)+'<b>'+label.replace('・','<br>')+'</b>'+(v||idx>=0?'<span class="h">'+(idx>=0?preview.h:v.h)+'</span>':'')+(man?'<span class="man" style="--ink:'+colors[man.owner]+'">'+(man.owner+1)+roles[man.role][0]+'</span>':'')+'</button>'}
  grid.innerHTML=html;
  if(!human&&!end&&!$('setup').open)timer=setTimeout(()=>{botStep(g);resetPick();persist();render()},550);
 }
