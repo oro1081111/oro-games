@@ -295,7 +295,7 @@ $('start').onclick=()=>{g=setup([...$('seats').querySelectorAll('select')].map(s
 function openRulebook(){
  clearTimeout(timer);stopSearch();
  const frame=$('rulebook-frame');
- if(!frame.getAttribute('src'))frame.src='rules.html?embedded=1&v=guide-ui-1';
+ if(!frame.getAttribute('src'))frame.src='rules.html?embedded=1&v=guide-rules-2';
  $('rulebook').showModal();
 }
 document.addEventListener('click',event=>{
