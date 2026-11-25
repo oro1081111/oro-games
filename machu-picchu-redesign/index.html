@@ -26,6 +26,14 @@ header{flex-wrap:wrap}.header-actions{display:flex;align-items:center;gap:8px;fl
 .rulebook-bar h2{font-size:20px;margin:0}.rulebook-bar button{white-space:nowrap;color:#143f34}
 #rulebook-frame{display:block;border:0;width:100%;flex:1;min-height:0;background:#f0f3ed}
 @media(max-width:600px){.rulebook-bar{padding:10px}.rulebook-bar h2{font-size:17px}.rulebook-bar button{font-size:14px;padding:8px}}
+
+.rule-example header,.rule-example details,.rule-example [data-rulebook],.rule-example #setup{display:none!important}
+.rule-example main{padding:8px}.rule-example .layout{grid-template-columns:minmax(0,1fr)}
+.rule-example .viewport{height:270px!important}.rule-example .panel{padding:12px}
+.rule-example .panel h2{font-size:18px}.rule-example .market{grid-template-columns:repeat(4,minmax(0,1fr))}
+.rule-example .hint{margin:8px 0}.rule-example .player{font-size:13px}
+.rule-example #controls button,.rule-example .sq{cursor:default}
+.rule-example .panel table{font-size:13px}.rule-example .note{font-size:14px}
 </style>
 <header><div><small>ORO BOARD GAME DESIGN</small><h1>Founders of Machu Picchu</h1><span class="preview-label">Interface preview</span></div><nav class="header-actions" aria-label="Game navigation"><button type="button" class="rulebook-link" data-rulebook>Rulebook</button><button id="new">New game</button></nav></header><main><div id="players"></div><div class="layout"><section class="mapwrap"><div class="bar"><strong id="round"></strong><div><button id="minus" aria-label="Zoom out">−</button> <button id="center">Center</button> <button id="plus" aria-label="Zoom in">＋</button></div></div><div class="viewport" id="vp"><div class="plane"><div class="grid" id="grid"></div></div></div></section><section class="panel"><div id="status" class="note"></div><div id="controls" aria-live="polite"></div><details><summary>Rules &amp; scoring</summary><p><button type="button" class="rulebook-link" data-rulebook>Read the illustrated rulebook</button></p><p>Take one display tile and its pillars, place it, then place one meeple. Ground-level tiles must share an edge with the land. When stacking, at least one half must rest directly on an existing tile. Pillars can support the other half from empty ground (level 0). Pay 2 pillars per missing level. If both halves rest on tiles, they must span two different tiles. For example, bridging the level-1 central tile and empty ground costs 2 pillars and places the new tile at level 2. Meeples cannot be covered.</p><p>Place a Statue on empty ground sharing an edge with the land. It scores the sum of the four adjacent tile levels. When its connected empty-ground area first becomes enclosed, the builder and its owner each gain 1 pillar. Placing a Statue in an already enclosed area grants 1 pillar. A Priest costs pillars equal to the temple level and establishes a scoring Shrine. A Worker grants twice the temple level in pillars.</p><p>Each Shrine scores its effect value multiplied by its level. Summit uses the highest matching terrain level. Domain uses the largest matching connected area plus 1. Regions counts matching connected areas. Artisan uses your Worker count plus 1. Monument uses your Statue count. Only visible terrain counts, and matching terrain connects across different levels. Every 2 remaining pillars score 1 point. Players with the most remaining pillars each gain 6 bonus points, including ties.</p></details><details><summary>Turn log</summary><ol id="log"></ol></details></section></div></main>
 <dialog id="setup"><h2>Create a new game</h2><label>Players <select id="count"><option>3</option><option>4</option><option>5</option></select></label><div id="seats" class="seats"></div><p class="note">Player 1 starts the first round. Local players share this device and take turns in seat order.</p><div class="controls"><button id="start" class="primary">Start game</button><button type="button" data-rulebook>Rules</button><button id="cancel">Back</button></div></dialog>
@@ -197,8 +205,55 @@ const terrainLabels=['Terrace','Pasture','Rock','Water'],effectLabels=['Summit',
 const tileLabel=v=>typeof v==='number'?terrainLabels[v]:effectLabels[v.e]+(v.t===undefined?'':'・'+terrainLabels[v.t]);
 function face(v){return '<span title="'+title(v)+'" class="face '+(typeof v==='number'?'t'+v:'temple')+'">'+tileLabel(v).replace('・','<br>')+'</span>'}
 const key='oro.machu.redesign.en.v1';let g,rot=0,sel=null,role='statue',size=46,timer,saveFailed=false;
-try{g=JSON.parse(localStorage.getItem(key))}catch{}let fresh=!g;if(!g)g=setup([false,true,true]);
-function persist(){try{localStorage.setItem(key,JSON.stringify(g));saveFailed=false}catch{saveFailed=true}}
+const ruleExample=new URLSearchParams(location.search).get('rule-example');
+try{if(!ruleExample)g=JSON.parse(localStorage.getItem(key))}catch{}
+let fresh=!g&&!ruleExample;if(!g)g=setup([false,true,true]);
+if(ruleExample){
+ document.body.classList.add('rule-example');
+ const example=createRuleExample(ruleExample);g=example.game;sel=example.k;rot=example.r;role=example.role;
+}
+
+function createRuleExample(kind){
+ const game=setup([false,false,false]);
+ game.players.forEach(p=>p.p=12);
+ game.market=[
+  {tile:[{e:1,t:1},1],d:1,p:0},
+  {tile:[{e:0,t:3},2],d:1,p:0},
+  {tile:[1,1],d:0,p:1},
+  {tile:[2,3],d:0,p:1}
+ ];
+ function add(k,r,tile){
+  game.hand={tile,d:typeof tile[0]==='object'?1:0,p:0};game.phase='build';
+  if(!build(game,k,r))throw Error('Invalid rule example');
+  game.history.push({build:game.last});game.turn++;
+ }
+ const tile=[{e:1,t:1},1];
+ let k='0,-1',r=0,role='statue';
+ if(kind==='stack'){
+  add('0,-1',0,[1,3]);r=1;
+ }
+ if(kind==='bridge'||kind==='priest'||kind==='worker'){
+  add('1,0',0,[2,3]);
+  add('1,-1',1,[{e:0,t:3},1]);
+  k='1,-1';
+  if(kind==='bridge'){add('-1,-1',0,[1,0]);r=2}
+  else return {game,k,r:0,role:kind};
+ }
+ if(kind==='ground')k='1,0';
+ if(kind==='scoring'){
+  add('2,0',0,[1,1]);add('2,-1',0,[1,1]);
+  add('0,-1',0,[{e:1,t:1},1]);add('0,-1',2,[{e:1,t:1},1]);
+  add('3,1',0,[2,3]);add('2,2',0,[2,3]);
+  game.men={'0,-1':{role:'priest',owner:0},'2,1':{role:'statue',owner:0,closed:true}};
+  game.players.forEach((p,i)=>p.p=[10,10,7][i]);
+  game.phase='end';game.round=7;
+ }else{
+  game.hand={tile,d:1,p:0};game.phase='build';
+ }
+ return {game,k,r,role};
+}
+
+function persist(){if(ruleExample)return;try{localStorage.setItem(key,JSON.stringify(g));saveFailed=false}catch{saveFailed=true}}
 function selectedAction(){return actions(g).find(a=>a.k===sel&&a.role===role)}
 // A recorded building move identifies the solid tile at that level.
 function tileLayers(g,preview){
@@ -235,7 +290,7 @@ function render(){
  $('players').innerHTML=g.players.map((p,i)=>'<div class="player '+(!end&&i===g.seat?'current':'')+'" style="--ink:'+colors[i]+'"><b class="dot">●</b> '+names(i)+(p.bot==='expert'?' · Expert':p.bot?' ⚙':'')+' · '+p.p+' pillars</div>').join('');
  $('round').textContent='Round '+g.round+' / '+(10-g.players.length);
  $('status').textContent=(end?'Construction complete':names(g.seat)+(human?' — your turn':g.players[g.seat].bot==='expert'?(g.expertPlan?' · Expert playing':' · Expert thinking…'):' · Computer playing'))+(saveFailed?' (Progress could not be saved)':'');
- $('log').innerHTML=g.history.map(a=>'<li>'+names(a.seat)+' built at '+a.build.k+' (level '+a.build.h+'), then placed a '+roles[a.role].toLowerCase()+' at '+a.k+'</li>').reverse().join('');
+ $('log').innerHTML=ruleExample?'':g.history.map(a=>'<li>'+names(a.seat)+' built at '+a.build.k+' (level '+a.build.h+'), then placed a '+roles[a.role].toLowerCase()+' at '+a.k+'</li>').reverse().join('');
  const valid=new Map();
  if(g.phase==='build')for(const m of moves(g,rot))valid.set(m.k,m);
  if(g.phase==='act')for(const a of actions(g).filter(a=>a.role===role))valid.set(a.k,a);
@@ -267,13 +322,14 @@ function render(){
  html+='<button data-k="'+k+'" aria-label="'+k+' '+label+(v?' level '+v.h:' empty ground')+'" '+(active?'':'tabindex="-1"')+' class="sq '+(show===undefined?'':'land '+(typeof show==='number'?'t'+show:'temple'))+(active?' legal':'')+(idx>=0||sel===k?' ghost':'')+(g.phase==='act'&&g.last&&[g.last.k,g.last.l].includes(k)?' recent':'')+'" style="--depth:'+(height*step)+'px;' +outline+'">'+frontFace(layers,k,height,frontHeight,step)+'<b>'+(show===undefined?'':tileLabel(show).replace('・','<br>'))+'</b>'+(v||idx>=0?'<span class="h">'+(idx>=0?preview.h:v.h)+'</span>':'')+(man?'<span class="man" title="'+names(man.owner)+' · '+roles[man.role]+'" style="--ink:'+colors[man.owner]+'">'+(man.owner+1)+({statue:'S',priest:'P',worker:'W'})[man.role]+'</span>':'')+'</button>'}
  grid.innerHTML=html;
  fitTileLabels();
- if(!human&&!end&&!$('setup').open&&!$('rulebook').open)timer=setTimeout(computerTurn,550);
+ if(!ruleExample&&!human&&!end&&!$('setup').open&&!$('rulebook').open)timer=setTimeout(computerTurn,550);
 }
 let activeSearch=null, workerURL;
 function stopSearch(){
  if(activeSearch){activeSearch.terminate();activeSearch=null}
 }
 function computerTurn(){
+ if(ruleExample)return;
  if($('rulebook').open||$('setup').open||g.phase==='end')return;
  if(g.players[g.seat].bot!=='expert'){botStep(g)}
  else if(g.expertPlan){
@@ -299,24 +355,24 @@ function computerTurn(){
  resetPick();persist();render();
 }
 function resetPick(){sel=null;role='statue';rot=0}
-$('controls').onclick=e=>{const btn=e.target.closest('button');if(!btn||g.players[g.seat].bot)return;
+$('controls').onclick=e=>{const btn=e.target.closest('button');if(ruleExample||!btn||g.players[g.seat].bot)return;
  if(btn.dataset.take!==undefined)take(g,+btn.dataset.take);
  else if(btn.id==='rotate'){rot=(rot+1)%4;if(sel&&!placement(g,sel,rot))sel=null}
  else if(btn.dataset.role){role=btn.dataset.role;sel=null}
  else if(btn.id==='confirm'){if(g.phase==='build')build(g,sel,rot);else if(g.phase==='act'&&selectedAction())act(g,sel,role);resetPick()}
  persist();render()
 };
-$('grid').onclick=e=>{const btn=e.target.closest('.legal');if(btn){sel=btn.dataset.k;render()}};
+$('grid').onclick=e=>{if(ruleExample)return;const btn=e.target.closest('.legal');if(btn){sel=btn.dataset.k;render()}};
 function center(){const v=$('vp');v.scrollLeft=(v.scrollWidth-v.clientWidth)/2;v.scrollTop=(v.scrollHeight-v.clientHeight)/2}
 $('center').onclick=center;for(const [id,d] of [['plus',6],['minus',-6]])$(id).onclick=()=>{size=Math.min(76,Math.max(30,size+d));render();center()};
 function seats(){const old=[...$('seats').querySelectorAll('select')].map(x=>x.value);$('seats').innerHTML=Array.from({length:+$('count').value},(_,i)=>'<label>'+names(i)+'<select><option value="human">Local player</option><option value="bot">Computer</option><option value="expert">Expert</option></select></label>').join('');[...$('seats').querySelectorAll('select')].forEach((s,i)=>s.value=old[i]??(i?'bot':'human'))}
-function openSetup(){clearTimeout(timer);stopSearch();seats();$('setup').showModal()}
+function openSetup(){if(ruleExample)return;clearTimeout(timer);stopSearch();seats();$('setup').showModal()}
 $('count').onchange=seats;$('new').onclick=openSetup;$('cancel').onclick=()=>$('setup').close();$('setup').onclose=render;
 $('start').onclick=()=>{g=setup([...$('seats').querySelectorAll('select')].map(s=>s.value==='expert'?'expert':s.value==='bot'));resetPick();persist();$('setup').close();render();center()};
 function openRulebook(){
  clearTimeout(timer);stopSearch();
  const frame=$('rulebook-frame');
- if(!frame.getAttribute('src'))frame.src='rules.html?embedded=1&v=guide-rules-2';
+ if(!frame.getAttribute('src'))frame.src='rules.html?embedded=1&v=guide-real-board-3';
  $('rulebook').showModal();
 }
 document.addEventListener('click',event=>{
@@ -324,7 +380,7 @@ document.addEventListener('click',event=>{
 });
 $('close-rulebook').onclick=()=>$('rulebook').close();
 $('rulebook').addEventListener('close',()=>{
- if(g.players[g.seat].bot&&g.phase!=='end'&&!$('setup').open)timer=setTimeout(computerTurn,550);
+ if(!ruleExample&&g.players[g.seat].bot&&g.phase!=='end'&&!$('setup').open)timer=setTimeout(computerTurn,550);
 });
 window.addEventListener('message',event=>{
  if(event.origin===location.origin&&event.source===$('rulebook-frame').contentWindow&&event.data?.type==='close-rulebook'&&$('rulebook').open)$('rulebook').close();
