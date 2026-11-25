@@ -1,0 +1,104 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#143f34"><title>馬丘比丘的奠基者 — 完整遊戲說明書</title><style>
+*{box-sizing:border-box}html{scroll-behavior:smooth;scroll-padding-top:24px}body{margin:0;background:#f0f3ed;color:#203c34;font:17px/1.75 system-ui,sans-serif}
+a{color:#175c46;text-underline-offset:3px}a:focus-visible{outline:3px solid #b66b21;outline-offset:4px}
+header{background:#143f34;color:#fff;padding:26px max(5vw,18px)}header>div{max-width:1160px;margin:auto}
+header p{margin:0;color:#dce8d5;font-size:15px}h1{font:700 clamp(27px,4vw,42px)/1.25 Georgia,serif;margin:8px 0 16px}
+header nav{display:flex;flex-wrap:wrap;gap:10px}header a{background:white;color:#143f34;padding:7px 14px;border-radius:8px;text-decoration:none;font-size:15px}
+.layout{max-width:1200px;margin:24px auto;display:grid;grid-template-columns:220px minmax(0,1fr);gap:24px;padding:0 18px 50px}
+aside{align-self:start;position:sticky;top:20px;background:white;border-radius:12px;padding:16px;font-size:15px}
+aside strong{display:block;margin-bottom:8px}aside a{display:block;padding:5px 0;text-decoration:none}article{min-width:0}
+section{background:white;border:1px solid #dce5dc;border-radius:14px;padding:24px;margin-bottom:18px}
+h2{font:700 27px/1.4 Georgia,serif;margin:0 0 16px}h3{font-size:19px;line-height:1.45;margin:24px 0 9px}
+p{margin:9px 0 14px}ul,ol{padding-left:24px;margin:10px 0 18px}li{margin:7px 0}strong{font-weight:700}
+.table{overflow-x:auto;margin:14px 0}table{border-collapse:collapse;width:100%;font-size:15px;line-height:1.6}th,td{text-align:left;padding:10px 12px;border:1px solid #dbe4dc;vertical-align:top}
+th{background:#e9f0e6}table.wide{min-width:560px}.note{border-left:4px solid #b58238;background:#fbf6e8;padding:12px 16px;margin:16px 0}
+.formula{background:#e9f2eb;border-radius:8px;padding:12px 16px;font-weight:650}.terms{color:#526359;font-size:15px}
+@media(max-width:800px){body{font-size:16px}.layout{grid-template-columns:1fr;gap:16px;margin-top:16px;padding:0 12px 28px}aside{position:static}aside nav{display:flex;gap:5px 16px;flex-wrap:wrap}aside a{padding:3px 0}section{padding:19px 16px}h2{font-size:24px}th,td{padding:8px}header{padding:20px 16px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+@media print{body{background:white;color:black}.layout{display:block;padding:0;margin:0}header{background:white;color:black;padding:0}header p{color:black}header nav,aside{display:none}section{border:0;padding:8px 0;break-inside:auto}h2,h3{break-after:avoid}a{color:black}}
+</style></head><body><header><div><p>完整遊戲說明書</p><h1>馬丘比丘的奠基者</h1><nav aria-label="頁面導覽"><a href="./">遊戲首頁</a><a href="../machu-picchu-redesign/rules.html" lang="en">English rulebook</a></nav></div></header><main class="layout"><aside><strong>目錄</strong><nav aria-label="目錄"><a href="#overview">遊戲目標與基本概念</a><a href="#setup">配件與遊戲準備</a><a href="#web">網頁操作方式</a><a href="#turn">拿取探索區板塊</a><a href="#placement">放置板塊與石柱支撐</a><a href="#meeples">米寶行動與雕像封閉</a><a href="#refill">補充探索區</a><a href="#rounds">換輪與遊戲結束</a><a href="#scoring">完整終局計分</a><a href="#tiles">板塊構成與配對</a><a href="#faq">常見問題</a></nav></aside><article><section id="overview"><h2>遊戲目標與基本概念</h2>
+<p>《馬丘比丘的奠基者》是 3～5 人共同建造城市、競爭得分的板塊遊戲，適合 10 歲以上玩家，每場約 10～20 分鐘。</p>
+<p>大家在同一片土地上擴建與堆疊，用米寶建立雕像、祭壇或派遣工人。建造完成後，將雕像、祭壇、剩餘石柱與最多石柱獎勵的分數相加，總分最高者獲勝。</p>
+<div class="formula">每回合拿 1 片板塊 → 放置板塊 → 放置 1 個米寶 → 補充探索區。</div>
+<ul><li><strong>一片普通板塊或聖殿板塊都是完整的 1×2 板塊。</strong>兩格共用外框，內部的地貌分界只代表兩種格子內容。</li><li>中央板塊是一整片 2×2 板塊。</li><li>桌面空地是第 0 層；直接放在桌面的板塊是第 1 層，再往上依序是第 2、3、4 層。</li><li>四種地貌為<strong>梯田、牧地、岩地、水域</strong>。聖殿格本身沒有地貌。</li></ul>
+<p class="terms">本頁適用目前網頁版規則，包含從第 0 層立柱支撐，以及並列最多石柱者各得 6 分。</p>
+</section><section id="setup"><h2>配件與遊戲準備</h2>
+<h3>配件</h3>
+<ul><li>中央板塊 1 片，2×2 四格各有一種地貌。</li><li>1×2 板塊 30 片，包含 16 片聖殿板塊與 14 片普通板塊。</li><li>米寶 35 個，5 色各 7 個，依人數使用所需數量。</li><li>單根石柱 30 個、代表 5 根的石柱標記 15 個，以及起始玩家標記 1 個。石柱供應視為無限。</li></ul>
+<h3>準備順序</h3>
+<ol><li>把中央板塊放在桌面中央。網頁版左上為梯田、右上為牧地、左下為水域、右下為岩地。</li><li>將聖殿板塊與普通板塊分別洗勻，形成兩疊面朝下的預備區。</li><li>探索區從左至右翻開 2 片聖殿板塊，再翻開 2 片普通板塊。每片普通板塊各放 1 根石柱。</li><li>每位玩家選擇顏色，依下表取得米寶與起始石柱。</li><li>實體遊戲由最近參觀過古蹟的玩家起始；網頁版固定由玩家 1 起始，再按座位順序進行。</li></ol>
+<div class="table"><table><thead><tr><th scope="col">人數</th><th scope="col">每人米寶</th><th scope="col">起始石柱，依首輪順位</th><th scope="col">遊戲輪數</th></tr></thead><tbody><tr><td>3 人</td><td>7 個</td><td>3／2／0</td><td>7 輪</td></tr><tr><td>4 人</td><td>6 個</td><td>5／3／1／0</td><td>6 輪</td></tr><tr><td>5 人</td><td>5 個</td><td>5／4／1／1／0</td><td>5 輪</td></tr></tbody></table></div>
+<p>每位玩家每輪進行 1 回合，並在每回合放置 1 個米寶。最後一輪結束時，剛好用完本局分配的米寶。</p>
+</section><section id="web"><h2>網頁操作方式</h2>
+<ol><li>按右上角「新對局」，選 3～5 人，再為每個座位指定本機玩家、電腦或高手，按「開始遊戲」。本機玩家共用同一台裝置，輪到自己時操作。</li><li>輪到你時，點選探索區的一片板塊，板塊上的石柱會立即加入你的持有量。</li><li>按「旋轉」改變方向。點選虛線空地或帶綠點的可用板塊格，設定新板塊的第一格。方向標示指向第二格。</li><li>核對兩格落點、層數與石柱費用，再按「確認建造」。確認前可改選其他合法位置或方向。</li><li>選「雕像」、「祭司」或「工人」，再點選位置，閱讀收益或費用後確認。系統會補充探索區並交給下一位玩家。</li></ol>
+<ul><li>手機可在棋盤區滑動查看土地；電腦可使用棋盤捲動區。使用「＋」、「−」調整棋盤大小，「置中」回到中央。</li><li>格子右上角的數字是層數；左上角的彩色米寶標示包含玩家編號與角色。</li><li>「對局紀錄」可查看已完成的建造與米寶行動。</li><li>一般電腦分階段選擇行動；高手先比較完整回合，並對部分方案進行有限的下一手推估。</li><li>進度會自動儲存在目前瀏覽器。繁中版與英文測試版各自保存進度。說明書在新分頁開啟，可切回原遊戲分頁繼續。</li></ul>
+</section><section id="turn"><h2>拿取探索區板塊</h2>
+<p>每回合首先從 4 片公開板塊中選 1 片，取得該板塊及上方所有累積石柱。取得的石柱可立即用於本回合的支撐或祭祀。</p>
+<p>剩下的公開板塊向左靠攏，保持原本相對順序。完成建造與米寶行動後，再依「補充探索區」的順序加柱、補牌。</p>
+<div class="note">普通板塊翻開時有 1 根初始石柱。之後石柱也可能累積在聖殿板塊上，拿取時全部歸拿取者。</div>
+</section><section id="placement"><h2>放置板塊與石柱支撐</h2>
+<p>選中的板塊可以旋轉為四個方向。兩格必須保持水平，且<strong>任何位置都不能覆蓋米寶</strong>。</p>
+<h3>地面擴建</h3>
+<p>將整片板塊放在兩格空地上，成為第 1 層。至少一格必須與既有土地共用一條邊；只碰到角落不足以成立。這種放法不支付支撐石柱。</p>
+<h3>向上堆疊</h3>
+<p>當兩格下方都有板塊時，新板塊必須跨越<strong>兩片不同的既有板塊</strong>。若下方等高，直接放在上一層；若有高差，用石柱補足較低側。</p>
+<h3>另一格可以從空地立柱</h3>
+<p>至少一格要直接壓在既有板塊上。另一格可伸到空地，以第 0 層作為支撐起點。每補足 1 層，支付 2 根石柱，支撐留在板塊下方。</p>
+<div class="formula">支撐費用＝兩側原本層數差 × 2 根石柱。新板塊層數＝較高側原本層數＋1。</div>
+<div class="table"><table><thead><tr><th scope="col">新板塊下方</th><th scope="col">新板塊層數</th><th scope="col">支撐費用</th></tr></thead><tbody><tr><td>兩格空地，且與土地側鄰</td><td>第 1 層</td><td>0 根</td></tr><tr><td>不同板塊，各為第 1 層</td><td>第 2 層</td><td>0 根</td></tr><tr><td>同一片中央板塊的兩格</td><td>無法放置</td><td>須跨不同板塊</td></tr><tr><td>第 1 層板塊＋第 0 層空地</td><td>第 2 層</td><td>2 根</td></tr><tr><td>第 3 層板塊＋第 1 層板塊</td><td>第 4 層</td><td>4 根</td></tr><tr><td>第 2 層板塊＋第 0 層空地</td><td>第 3 層</td><td>4 根</td></tr></tbody></table></div>
+<ul><li><strong>首位玩家第一動作就能架高。</strong>一格壓在中央板塊上、另一格伸到空地，支付 2 根石柱，整片成為第 2 層。</li><li>兩格下方都是空地時，只能在第 1 層擴建，不能兩側同時立柱架高。</li><li>石柱必須足夠支付全部支撐費用，才能確認建造。</li><li>上疊板塊不必與同層其他板塊側邊相鄰。</li><li>可以蓋住未放米寶的聖殿。被蓋住的地貌與聖殿不再計入可見盤面。</li></ul>
+</section><section id="meeples"><h2>米寶行動與雕像封閉</h2>
+<p>每回合建造後，必須從下列三種行動擇一，放置自己 1 個米寶。放置後永久留在原處。已被任何米寶占據的聖殿，無法再次使用。</p>
+<h3>雕像</h3>
+<p>將米寶直立放在與土地側鄰的空地上。雕像放在桌面，第 0 層，該位置上方也必須沒有板塊。終局計算它四個方向相鄰可見板塊的層數總和。</p>
+<p>雕像可以放在開放或已封閉的空地區域。若放入時區域已封閉，立即獲得 1 根石柱。</p>
+<h3>如何判斷封閉</h3>
+<p>從上方看，沿雕像所在的相連空地，以前後左右方向尋路。只要整片空地已沒有路徑通往土地外側，就算封閉。區域可以包含多格空地、多座雕像；雕像本身不阻擋空地路線。只剩斜角通道時，仍算封閉。</p>
+<p>若你剛放的板塊讓既有雕像第一次封閉，每座雕像分別發給<strong>雕像主人 1 根、建造者 1 根</strong>。兩者同一人時，該玩家獲得 2 根。這些石柱在米寶行動前取得，可以接著支付祭司費用。每座雕像的封閉獎勵只發一次。</p>
+<h3>祭司</h3>
+<p>選任一座未被覆蓋、未被占據的聖殿，支付等於聖殿層數的石柱，將米寶直立放在聖殿上，建立祭壇。例如第 3 層需支付 3 根。祭壇依聖殿效果在終局得分。</p>
+<h3>工人</h3>
+<p>選任一座未被覆蓋、未被占據的聖殿，將米寶橫放，立即取得聖殿層數兩倍的石柱。例如第 3 層獲得 6 根。工人占據該聖殿，該聖殿不作為祭壇得分。挖掘收益只在放工人當下取得一次。</p>
+<div class="note">祭司與工人可使用之前回合留下的任何空聖殿。若沒有可用聖殿，仍須放置雕像；石柱不足時也可選工人或雕像。</div>
+</section><section id="refill"><h2>補充探索區</h2>
+<p>建造與米寶行動都完成後，依序進行。</p>
+<ol><li>剩下的公開板塊向左靠攏，保留相對順序。</li><li>目前最左側的 2 片公開板塊，各增加 1 根石柱，任何類型都適用。</li><li>從剛才拿取的同類型預備區翻開 1 片，補到探索區最右側；該類預備區用完時，改由另一類補充。</li><li>若新翻開的是普通板塊，再在該片放 1 根初始石柱；新翻開的聖殿板塊有 0 根初始石柱。</li></ol>
+<p>例如起始探索區為「聖殿 A（0）、聖殿 B（0）、普通 C（1）、普通 D（1）」。拿走 B 並完成回合後，探索區變成「聖殿 A（1）、普通 C（2）、普通 D（1）、新聖殿（0）」。括號內為石柱數。</p>
+</section><section id="rounds"><h2>換輪與遊戲結束</h2>
+<p>每輪所有玩家各完成 1 回合後，比較目前持有的石柱。石柱最多者取得起始玩家標記，下一輪從他開始，再依座位順序進行。</p>
+<p>若多人並列最多，從本輪起始玩家的位置開始，依座位順序尋找第一位並列最多的玩家，包含本輪起始玩家本人。</p>
+<p>例如三人局本輪從玩家 2 開始，玩家 1 與玩家 3 並列最多。檢查順序為玩家 2、3、1，所以下輪由玩家 3 開始。</p>
+<p>3 人完成 7 輪、4 人完成 6 輪、5 人完成 5 輪後立即結束，結算所有人的分數。</p>
+</section><section id="scoring"><h2>完整終局計分</h2>
+<div class="formula">總分＝雕像分數＋祭壇分數＋剩餘石柱分數＋最多石柱獎勵。</div>
+<h3>雕像</h3>
+<p>逐座加總四個正交方向上，相鄰位置最上方可見板塊的層數；沒有板塊的方向計 0。雕像的區域是否封閉，都依同一方式計分。</p>
+<p>例如四鄰高度為 2、3、1、0，這座雕像得到 6 分。每座雕像分別計分，同一格板塊可供多座雕像計分。</p>
+<h3>祭壇</h3>
+<div class="formula">每座祭壇分數＝聖殿效果數值 × 祭壇所在層數。</div>
+<div class="table"><table><thead><tr><th scope="col">聖殿類型</th><th scope="col">效果數值</th></tr></thead><tbody><tr><td>山巔</td><td>全場對應地貌的最高層數。</td></tr><tr><td>疆域</td><td>全場對應地貌最大相連區域的格數＋1。</td></tr><tr><td>群域</td><td>全場對應地貌的獨立相連區域數。</td></tr><tr><td>紀念</td><td>自己放置的雕像總數。</td></tr><tr><td>工匠</td><td>自己放置的工人總數＋1。</td></tr></tbody></table></div>
+<ul><li>地貌只計算最上方可見的格子，包含中央板塊。聖殿格沒有地貌，被蓋住的地貌不計。</li><li>同種地貌前後左右相鄰即相連，跨不同層數也可相連；角接觸不相連。</li><li>所有玩家共用地貌盤面。紀念、工匠只計祭壇主人自己的米寶。</li><li>每座祭壇獨立計算，即使多座看同一地貌，也各自得分。工人占據的聖殿沒有祭壇分。</li><li>若對應地貌完全不存在，山巔與群域的效果為 0，疆域的效果為 1。</li></ul>
+<p>例如第 2 層的疆域祭壇，對應地貌最大區域有 6 格，得分為（6＋1）×2＝14 分。第 3 層紀念祭壇的主人有 4 座雕像，該祭壇得 12 分。</p>
+<h3>剩餘石柱</h3>
+<p>每剩餘完整的 2 根石柱得 1 分，單獨 1 根不計分。例如 9 根得 4 分，10 根得 5 分。</p>
+<h3>最多石柱獎勵</h3>
+<p><strong>持有最多剩餘石柱者額外得 6 分。多人並列最多時，每人各得完整的 6 分。</strong>這項獎勵加在石柱基本分數之外。</p>
+<p>例如三人分別剩 10、10、7 根，石柱基本分為 5、5、3 分；最多石柱獎勵為 6、6、0 分。</p>
+<p>總分範例：雕像 12 分、祭壇 14 分、剩 9 根石柱得 4 分，且並列最多再得 6 分，合計 36 分。</p><h3>決定勝者</h3>
+<p>總分最高者獲勝。最高總分若相同，所有並列最高者共同獲勝。</p>
+</section><section id="tiles"><h2>板塊構成與配對</h2>
+<p>普通板塊 14 片。梯田／梯田、牧地／牧地、岩地／岩地、水域／水域，各 2 片，共 8 片；四種地貌兩兩不同的組合各 1 片，共 6 片。</p>
+<p>聖殿板塊 16 片，每片一格聖殿加一格地貌。下表前者是聖殿所計算的指定地貌，後者是同片另一格的地貌。</p>
+<div class="table"><table><thead><tr><th scope="col">聖殿類型</th><th scope="col">指定地貌 → 同片另一格</th><th scope="col">片數</th></tr></thead><tbody><tr><td>山巔</td><td>牧地→水域；梯田→牧地；岩地→梯田；水域→岩地</td><td>4</td></tr><tr><td>疆域</td><td>牧地→牧地；梯田→梯田；岩地→岩地；水域→水域</td><td>4</td></tr><tr><td>群域</td><td>牧地→岩地；梯田→水域；岩地→牧地；水域→梯田</td><td>4</td></tr><tr><td>工匠</td><td>無指定地貌；另一格分別為牧地、岩地</td><td>2</td></tr><tr><td>紀念</td><td>無指定地貌；另一格分別為梯田、水域</td><td>2</td></tr></tbody></table></div>
+<p>聖殿格本身都沒有地貌。中央板塊另外 1 片，包含四種地貌各 1 格。</p>
+</section><section id="faq"><h2>常見問題</h2>
+<h3>同一片板塊內的兩格地貌不同，可以整片壓在它上面嗎？</h3><p>地貌不同仍屬同一片板塊。兩格下方都有板塊時，必須跨兩片不同板塊，所以無法這樣堆疊。</p>
+<h3>可以把空地算第 0 層，第一回合就架高嗎？</h3><p>可以。一格壓中央板塊、另一格伸到空地，支付 2 根石柱即可蓋到第 2 層。</p>
+<h3>可以用石柱把兩側都抬高，多蓋一層嗎？</h3><p>上疊時至少一側直接壓在既有板塊上。石柱用於補足較低側高差。</p>
+<h3>聖殿被工人占據後，還能放祭司嗎？</h3><p>米寶永久占用該格，所以該聖殿無法再次使用，也不能被蓋住。</p>
+<h3>封閉區域內有好幾座雕像，獎勵怎麼給？</h3><p>每座第一次封閉的雕像各自結算。建造者可因此取得多根石柱。</p>
+<h3>可以跳過米寶行動，保留一個米寶嗎？</h3><p>每回合都必須放置 1 個米寶，沒有空聖殿時放雕像。</p>
+<h3>如果所有人最後都沒有石柱呢？</h3><p>所有人並列最多，每人各得 6 分最多石柱獎勵。</p>
+<h3>石柱數影響下輪順位，也會在當下得到最多石柱分數嗎？</h3><p>換輪只決定下一輪起始玩家。最多石柱 6 分在終局結算。</p>
+<h3>按了新對局，原本那局還在嗎？</h3><p>開啟設定視窗後按「返回」可繼續原局；按「開始遊戲」會建立新局，更新此版本在瀏覽器中的進度。</p>
+</section></article></main></body></html>
