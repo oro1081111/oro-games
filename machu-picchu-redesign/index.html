@@ -1,0 +1,292 @@
+<!doctype html><html lang="en"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#163e35"><title>Founders of Machu Picchu | Interface Preview</title><style>
+*{box-sizing:border-box}body{margin:0;color:#203c34;background:#eef1e8;font:16px/1.45 system-ui,sans-serif}button,select{font:inherit;color:inherit;background:#fff;border:1px solid #b6c7bc;border-radius:9px;padding:9px 13px;cursor:pointer}button:disabled{opacity:.45;cursor:default}button:hover:enabled{border-color:#406954}button.on,.primary{background:#1b5544;color:white}header{background:#143f34;color:#f8f5df;padding:14px max(4vw,16px);display:flex;gap:10px;align-items:center;justify-content:space-between}h1{font: bold clamp(18px,3vw,27px) serif;margin:0}header small{display:block;font:10px/1.5 monospace;letter-spacing:2px;color:#c6d6b9}main{max-width:1280px;margin:auto;padding:16px}#players{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}.player{padding:5px 10px;border-bottom:3px solid transparent;font-size:14px}.current{background:white;border-color:var(--ink);border-radius:6px}.dot{color:var(--ink)}.layout{display:grid;grid-template-columns:minmax(0,1fr) minmax(280px,340px);gap:14px}.panel,.mapwrap{min-width:0;border-radius:16px;background:#fff;box-shadow:0 3px 15px #18483412}.bar{display:flex;justify-content:space-between;padding:10px 14px;align-items:center;gap:5px}.bar button{padding:5px 12px}.viewport{height:clamp(350px,65vh,740px);overflow:auto;overscroll-behavior:contain;background-color:#e1e9d9;background-image:repeating-radial-gradient(ellipse at 13% 10%,transparent 0 24px,#7a987617 25px 26px,transparent 27px 40px);border-radius:0 0 16px 16px}.plane{min-width:100%;min-height:100%;width:max-content;display:grid;place-items:center;padding:24px}.grid{display:grid;gap:0;align-content:center}.sq{position:relative;width:var(--size);height:var(--size);border-radius:4px;padding:0;border:1px solid #627e6e24;background:#ffffff18;overflow:visible;display:grid;place-content:center;line-height:1.1}.land{border-color:#435f4d66;box-shadow:0 var(--depth) 0 #776c50;transform:translateY(calc(-1 * var(--depth)));font-weight:700}.sq b{font-size:clamp(10px, .85em,14px);pointer-events:none}.h{position:absolute;top:1px;right:2px;font:10px monospace}.t0{background:repeating-linear-gradient(15deg,#e6ba76 0 6px,#dcaa62 7px 8px)}.t1{background:repeating-linear-gradient(-36deg,#b3ce84 0 10px,#a6c579 11px 12px)}.t2{background:linear-gradient(145deg,#c9c6af,#aaa78f)}.t3{background:repeating-linear-gradient(-8deg,#95ccd2 0 8px,#a9d8d8 9px 11px)}.temple{background:#eee0b9;color:#624a2f}.legal{border:2px dashed #518269}.ghost{outline:3px solid #d46d1e;outline-offset:-2px;z-index:2}.man{position:absolute;top:1px;left:1px;color:white;background:var(--ink);font-size:11px;padding:2px 3px;border-radius:5px}.recent{animation:rise .45s ease-out}@keyframes rise{from{translate:0 -10px;opacity:.45}}@media(prefers-reduced-motion:reduce){*{animation:none!important}}.panel{padding:18px;height:fit-content}h2{font: bold 21px/1.4 serif;margin:0 0 9px}p{margin:8px 0 13px}.market{display:grid;grid-template-columns:1fr 1fr;gap:8px}.card{padding:8px 5px;display:grid;gap:4px}.pair{display:flex;justify-content:center}.face{display:inline-grid;align-content:center;font-weight:bold;min-height:38px;min-width:43px;font-size:13px;color:#263d31;border:1px solid #0002}.controls{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.note{font-size:14px;color:#51645a}.action{margin-top:12px}dialog{border:0;border-radius:16px;padding:22px;max-width:min(520px,94vw);max-height:90vh;color:inherit}dialog::backdrop{background:#123c32a8}.seats{display:grid;gap:7px;margin:12px 0}.seats label{display:flex;gap:25px;align-items:center}table{border-collapse:collapse;font-size:14px;width:100%}td,th{padding:5px 2px;text-align:center;border-bottom:1px solid #ddd}details{margin-top:12px;font-size:14px}summary{cursor:pointer}#status{font-weight:bold}.hint{min-height:1.4em}button:focus-visible,select:focus-visible{outline:3px solid #ab571d}
+@media(max-width:760px){main{padding:8px}.layout{grid-template-columns:1fr;gap:8px}.viewport{height:clamp(230px,40dvh,430px)}#players{gap:1px;margin-bottom:5px}.player{font-size:12px;padding:4px}.panel{padding:12px}.market{grid-template-columns:repeat(4,1fr);gap:4px}.face{min-width:0;flex:1;font-size:11px}.card{padding:4px 2px}.bar{padding:6px 8px}header{padding:8px 12px}.panel h2{font-size:18px}}
+.sq.land{border-style:solid;border-color:#615e49;box-shadow:none;z-index:1}
+.front-face{position:absolute;display:block;top:calc(100% + var(--south-edge));left:calc(0px - var(--left-edge));right:calc(0px - var(--right-edge));pointer-events:none}
+.front-face i{display:block}
+.tile-rim{background:linear-gradient(#a88c65,#7d6951);box-shadow:inset 0 -0.75px #524839}
+.pillar-rim{background:linear-gradient(to right,transparent 16%,#786f61 16%,#b4ab97 20%,#a49883 30%,#746957 34%,transparent 34% 66%,#786f61 66%,#b4ab97 70%,#a49883 80%,#746957 84%,transparent 84%)}
+.sq.land.legal::before{content:"";position:absolute;bottom:3px;right:3px;width:8px;height:8px;background:#25654f;border:1px solid white;border-radius:50%}
+.sq.land.ghost{outline:0;border-color:#b24c12;filter:brightness(1.06)}
+header>div{min-width:0}header h1{font-size:clamp(16px,2.3vw,27px)}header button{flex-shrink:0}
+.preview-label{display:block;font-size:12px;color:#d0ddc7}
+.sq b{max-width:100%;font-size:clamp(9px,.68em,11px);overflow-wrap:anywhere;padding:2px}
+.face{overflow-wrap:anywhere;min-width:0;width:62px;padding:3px;font-size:11px}
+.card{min-width:0}.pair{min-width:0}.seats label{justify-content:space-between}
+@media(max-width:760px){.market{grid-template-columns:1fr 1fr}.face{width:58px;font-size:11px}.player{font-size:13px}.bar strong{font-size:14px}.panel table{font-size:12px}.panel th,.panel td{padding:5px 1px}}
+</style>
+<header><div><small>ORO BOARD GAME DESIGN</small><h1>Founders of Machu Picchu</h1><span class="preview-label">Interface preview</span></div><button id="new">New game</button></header><main><div id="players"></div><div class="layout"><section class="mapwrap"><div class="bar"><strong id="round"></strong><div><button id="minus" aria-label="Zoom out">−</button> <button id="center">Center</button> <button id="plus" aria-label="Zoom in">＋</button></div></div><div class="viewport" id="vp"><div class="plane"><div class="grid" id="grid"></div></div></div></section><section class="panel"><div id="status" class="note"></div><div id="controls" aria-live="polite"></div><details><summary>Rules &amp; scoring</summary><p>Take one display tile and its pillars, place it, then place one meeple. Ground-level tiles must share an edge with the land. When stacking, at least one half must rest directly on an existing tile. Pillars can support the other half from empty ground (level 0). Pay 2 pillars per missing level. If both halves rest on tiles, they must span two different tiles. For example, bridging the level-1 central tile and empty ground costs 2 pillars and places the new tile at level 2. Meeples cannot be covered.</p><p>Place a Statue on empty ground sharing an edge with the land. It scores the sum of the four adjacent tile levels. When its connected empty-ground area first becomes enclosed, the builder and its owner each gain 1 pillar. Placing a Statue in an already enclosed area grants 1 pillar. A Priest costs pillars equal to the temple level and establishes a scoring Shrine. A Worker grants twice the temple level in pillars.</p><p>Each Shrine scores its effect value multiplied by its level. Summit uses the highest matching terrain level. Domain uses the largest matching connected area plus 1. Regions counts matching connected areas. Artisan uses your Worker count plus 1. Monument uses your Statue count. Only visible terrain counts, and matching terrain connects across different levels. Every 2 remaining pillars score 1 point. Players with the most remaining pillars each gain 6 bonus points, including ties.</p></details><details><summary>Turn log</summary><ol id="log"></ol></details></section></div></main>
+<dialog id="setup"><h2>Create a new game</h2><label>Players <select id="count"><option>3</option><option>4</option><option>5</option></select></label><div id="seats" class="seats"></div><p class="note">Player 1 starts the first round. Local players share this device and take turns in seat order.</p><div class="controls"><button id="start" class="primary">Start game</button><button id="cancel">Back</button></div></dialog>
+<script id="game-rules">
+const terrain=['Terraces','Pasture','Rocky Ground','Water'], effects=['Summit','Domain','Regions','Artisan','Monument'];
+const dirs=[[1,0],[0,1],[-1,0],[0,-1]];
+const coord=k=>k.split(',').map(Number);
+function near(k){const [x,y]=coord(k);return dirs.map(([a,b])=>[x+a,y+b].join(','))}
+function bounds(keys){const pts=keys.map(coord);return [Math.min(...pts.map(p=>p[0])),Math.max(...pts.map(p=>p[0])),Math.min(...pts.map(p=>p[1])),Math.max(...pts.map(p=>p[1]))]}
+function decks(){
+ let ordinary=[],temples=[];
+ for(let i=0;i<4;i++){
+  ordinary.push([i,i],[i,i]);for(let j=i+1;j<4;j++)ordinary.push([i,j]);
+  for(let e=0;e<3;e++)temples.push([{e,t:i},[[1,3,0,2],[0,1,2,3],[3,2,1,0]][e][i]]);
+ }
+ for(const [e,t] of [[3,1],[3,2],[4,0],[4,3]])temples.push([{e},t]);
+ return [ordinary,temples];
+}
+function shuffle(a){for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function draw(g,d){if(!g.decks[d].length)d=1-d;let tile=g.decks[d].pop();if(tile)g.market.push({tile,d,p:d?0:1})}
+function setup(bots){
+ const n=bots.length, stock={3:[3,2,0],4:[5,3,1,0],5:[5,4,1,1,0]}[n];
+ let g={board:{},men:{},decks:decks().map(shuffle),market:[],players:bots.map((bot,i)=>({bot,p:stock[i]})),round:1,start:0,seat:0,turn:0,phase:'take',history:[]};
+ [0,1,3,2].forEach((v,i)=>g.board[[i%2,Math.floor(i/2)]]={v,h:1,id:0});[1,1,0,0].forEach(d=>draw(g,d));return g;
+}
+function take(g,i){if(g.phase!=='take'||!g.market[i])return false;g.hand=g.market.splice(i,1)[0];g.players[g.seat].p+=g.hand.p;g.phase='build';return true}
+function placement(g,k,r){
+ const b=g.board,l=near(k)[r],a=b[k],c=b[l];if(!l||g.men[k]||g.men[l])return null;
+ if(!a&&!c){if(![...near(k),...near(l)].some(t=>b[t]))return null;return {k,l,r,h:1,cost:0}}
+ if(a && c && a.id===c.id)return null;
+ const firstHeight=a?.h ?? 0, secondHeight=c?.h ?? 0;
+ const cost=2*Math.abs(firstHeight-secondHeight);return cost<=g.players[g.seat].p?{k,l,r,h:1+Math.max(firstHeight,secondHeight),cost}:null;
+}
+function exterior(b){
+ const [x0,x1,y0,y1]=bounds(Object.keys(b)),start=[x0-1,y0-1].join(','),seen=new Set([start]),q=[start];
+ for(let i=0;i<q.length;i++)for(const k of near(q[i])){if(b[k]||seen.has(k))continue;const [x,y]=coord(k);if(x<x0-1||x>x1+1||y<y0-1||y>y1+1)continue;seen.add(k);q.push(k)}
+ return seen;
+}
+function build(g,k,r){if(g.phase!=='build')return false;const m=placement(g,k,r);if(!m)return false;
+ [k,m.l].forEach((p,i)=>g.board[p]={v:g.hand.tile[i],h:m.h,id:g.turn+1});g.players[g.seat].p-=m.cost;
+ const open=exterior(g.board);for(const [p,man] of Object.entries(g.men))if(man.role==='statue'&&!man.closed&&!open.has(p)){man.closed=true;g.players[man.owner].p++;g.players[g.seat].p++}
+ g.last=m;g.phase='act';return true;
+}
+function actions(g){let a=[],land=Object.keys(g.board),edge=new Set(land.flatMap(near));
+ for(let k of edge)if(!g.board[k]&&!g.men[k])a.push({k,role:'statue'});
+ for(let k of land){let c=g.board[k];if(typeof c.v==='object'&&!g.men[k]){a.push({k,role:'worker'});if(g.players[g.seat].p>=c.h)a.push({k,role:'priest'})}}return a;
+}
+function act(g,k,role){if(g.phase!=='act'||!actions(g).some(a=>a.k===k&&a.role===role))return false;
+ const p=g.players[g.seat],h=g.board[k]?.h||0,closed=role==='statue'&&!exterior(g.board).has(k);
+ g.men[k]={role,owner:g.seat,closed};p.p+=role==='worker'?2*h:role==='priest'?-h:Number(closed);
+ g.history.push({seat:g.seat,k,role,...{build:g.last}});g.market.slice(0,2).forEach(c=>c.p++);draw(g,g.hand.d);delete g.hand;
+ let n=g.players.length;g.turn++;if(g.turn===n*(10-n)){g.phase='end';return true}
+ if(g.turn%n===0){const max=Math.max(...g.players.map(p=>p.p));for(let i=0;i<n;i++){let s=(g.start+i)%n;if(g.players[s].p===max){g.start=s;break}}g.seat=g.start;g.round++}else g.seat=(g.seat+1)%n;
+ g.phase='take';return true;
+}
+function stats(g){return terrain.map((_,t)=>{let left=new Set(Object.keys(g.board).filter(k=>g.board[k].v===t)),groups=0,largest=0,highest=0;
+ while(left.size){const k=left.values().next().value,q=[k];left.delete(k);groups++;for(let i=0;i<q.length;i++){highest=Math.max(highest,g.board[q[i]].h);for(const l of near(q[i]))if(left.delete(l))q.push(l)}largest=Math.max(largest,q.length)}return [highest,largest+1,groups]})}
+function effect(v,st,men){return v.e<3?st[v.t][v.e]:v.e===3?1+men.filter(m=>m.role==='worker').length:men.filter(m=>m.role==='statue').length}
+function statueValue(g,k){return near(k).reduce((a,l)=>a+(g.board[l]?.h||0),0)}
+function mostPillarsBonus(count,max){return count===max?6:0}
+function scores(g,st=stats(g)){const max=Math.max(...g.players.map(p=>p.p));
+ return g.players.map((p,i)=>{let own=Object.entries(g.men).filter(([,m])=>m.owner===i),men=own.map(([,m])=>m),statue=0,shrine=0;for(const [k,m] of own){if(m.role==='statue')statue+=statueValue(g,k);if(m.role==='priest'){const c=g.board[k];shrine+=c.h*effect(c.v,st,men)}}const pillars=Math.floor(p.p/2),bonus=mostPillarsBonus(p.p,max);return {statue,shrine,pillars,bonus,total:statue+shrine+pillars+bonus}})}
+function moves(g,r){const [x0,x1,y0,y1]=bounds(Object.keys(g.board)),ms=[];for(let x=x0-2;x<=x1+2;x++)for(let y=y0-2;y<=y1+2;y++){const m=placement(g,[x,y].join(','),r);if(m)ms.push(m)}return ms}
+function best(items,rate){let score=-Infinity,result;for(const item of items){let v=rate(item)+Math.random()*.85;if(v>score){score=v;result=item}}return result}
+function botStep(g){
+ if(g.phase==='take'){const c=best(g.market,c=>c.p+1.8*c.d);take(g,g.market.indexOf(c))}
+ else if(g.phase==='build'){const m=best(dirs.flatMap((_,r)=>moves(g,r)),m=>{let v=m.h*1.4-m.cost*.65;for(const k of [m.k,m.l])for(const l of near(k)){const man=g.men[l];if(man?.role==='statue')v+=(man.owner===g.seat?1.2:-.8)*(m.h-(g.board[k]?.h||0));else if(g.board[l])v+=.16}return v});build(g,m.k,m.r)}
+ else if(g.phase==='act'){const st=stats(g),men=Object.values(g.men).filter(m=>m.owner===g.seat),a=best(actions(g),a=>{const c=g.board[a.k];if(a.role==='statue')return statueValue(g,a.k)+.8;if(a.role==='worker')return c.h*(g.players[g.seat].p<3?2.5:1.15);return c.h*(effect(c.v,st,men)-.45)+.8});act(g,a.k,a.role)}
+}
+// Each trial owns its resources and enclosure flags. Tiles themselves are immutable.
+function trial(g){
+ return {...g,board:{...g.board},men:Object.fromEntries(Object.entries(g.men).map(([k,m])=>[k,{...m}])),
+  players:g.players.map(p=>({...p})),market:g.market.slice()};
+}
+function reserve(p,left){
+ if(!left)return Math.floor(p/2);
+ return .5*p+Math.min(p,5)*.36*Math.min(1,left/2);
+}
+function rankValue(values,seat){
+ const own=values[seat];let rank=0,closeness=0;
+ for(let i=0;i<values.length;i++)if(i!==seat){
+  const diff=own-values[i];
+  rank+=diff>1e-8?2:Math.abs(diff)<1e-8?1:0;
+  closeness+=1/(1+Math.exp(-diff/4));
+ }
+ return {rank,quality:closeness*6+own*.09};
+}
+function actionRatings(g,left){
+ const seat=g.seat,st=stats(g),totals=scores(g,st),men=Object.values(g.men).filter(m=>m.owner===seat);
+ const open=exterior(g.board),pillars=g.players.map(p=>p.p);
+ const bases=totals.map(t=>t.statue+t.shrine);
+ const synergies=[0,0,0,0,0];
+ for(const [k,m] of Object.entries(g.men))if(m.owner===seat&&m.role==='priest')synergies[g.board[k].v.e]+=g.board[k].h;
+ const fade=Math.min(1,left/3);
+ return actions(g).map(a=>{
+  const cell=g.board[a.k],h=cell?.h||0;let change=0,points=0,potential=0;
+  if(a.role==='worker'){change=2*h;points=synergies[3]}
+  else if(a.role==='priest'){
+   change=-h;points=h*effect(cell.v,st,men);
+   potential=fade*h*[.4,.35,.18,.28,.55][cell.v.e];
+  }else{
+   change=Number(!open.has(a.k));points=statueValue(g,a.k)+synergies[4];
+   potential=fade*.26*near(a.k).filter(k=>!g.men[k]).length;
+  }
+  const stock=pillars.slice();stock[seat]+=change;
+  const max=Math.max(...stock);
+  const values=bases.map((v,i)=>v+reserve(stock[i],left)+(left<=1?mostPillarsBonus(stock[i],max):0));
+  values[seat]+=points;
+  const rating=rankValue(values,seat);rating.quality+=potential;
+  return {...a,...rating};
+ });
+}
+const comparePlan=(a,b)=>b.rank-a.rank||b.quality-a.quality;
+function shortlist(list,plan,limit){
+ if(list.length===limit&&comparePlan(plan,list[list.length-1])>=0)return;
+ list.push(plan);list.sort(comparePlan);if(list.length>limit)list.pop();
+}
+function visiblePlans(g,left,limit,future=false){
+ const plans=[],seen=new Set();
+ const cards=g.phase==='take'?g.market.map((_,i)=>i):[-1];
+ for(const card of cards){
+  const hand=trial(g);if(card>=0){
+   const signature=JSON.stringify(hand.market[card]);if(seen.has(signature))continue;
+   seen.add(signature);take(hand,card);
+  }
+  let placements=hand.phase==='act'?[null]:dirs.flatMap((_,r)=>moves(hand,r));
+  if(hand.phase!=='act'&&hand.hand.tile[0]===hand.hand.tile[1])placements=placements.filter(m=>m.r<2);
+  if(future&&placements.length>10){
+   // Limit only the speculative next turn. Keep both stacking and expansion candidates.
+   const priority=m=>m.h-.32*m.cost+.5*near(m.k).filter(k=>hand.men[k]?.owner===hand.seat).length;
+   placements.sort((a,b)=>priority(b)-priority(a));
+   placements=[...new Set([...placements.slice(0,7),...placements.filter(m=>m.h===1).slice(0,3)])];
+  }
+  for(const m of placements){
+   const board=m?trial(hand):hand;if(m)build(board,m.k,m.r);
+   const ratings=actionRatings(board,left);
+   for(const a of ratings)shortlist(plans,{card,m,a,rank:a.rank,quality:a.quality},limit);
+  }
+ }
+ return plans;
+}
+function expertPlan(g){
+ const left=10-g.players.length-g.round;
+ const finalists=visiblePlans(g,left,6);
+ if(!finalists.length)throw Error('No legal expert action found.');
+ const leading=finalists.filter(p=>p.rank===finalists[0].rank&&p.quality>=finalists[0].quality-1.2);
+ if(left>0)for(const p of leading.slice(0,3)){
+  const next=trial(g);
+  if(p.card>=0)take(next,p.card);
+  if(p.m)build(next,p.m.k,p.m.r);
+  // Settle through normal rules, with no hidden refill. Model only this player's next opportunity.
+  next.history=[];next.market=next.market.map(c=>({...c}));next.decks=[[],[]];
+  act(next,p.a.k,p.a.role);
+  next.seat=g.seat;next.round=g.round+1;next.phase='take';
+  const continuation=visiblePlans(next,left-1,1,true)[0];
+  if(continuation)p.quality+=.22*Math.max(0,Math.min(4,continuation.quality-p.quality));
+ }
+ leading.sort(comparePlan);
+ const close=leading.filter(p=>p.quality>=leading[0].quality-(left?.7:.000001));
+ const weights=close.map(p=>Math.exp((p.quality-close[0].quality)*4));
+ let roll=Math.random()*weights.reduce((a,b)=>a+b,0);
+ return close.find((p,i)=>(roll-=weights[i])<=0)||close[0];
+}
+</script><script>
+const $=id=>document.getElementById(id),colors=['#a83e37','#32618b','#527437','#9a611e','#79518a'],roles={statue:'Statue',priest:'Priest',worker:'Worker'},names=i=>'Player '+(i+1);
+const title=v=>typeof v==='number'?terrain[v]:effects[v.e]+(v.t===undefined?'':'・'+terrain[v.t]);
+const terrainLabels=['Terrace','Pasture','Rock','Water'],effectLabels=['Summit','Domain','Regions','Artisan','Monument'];
+const tileLabel=v=>typeof v==='number'?terrainLabels[v]:effectLabels[v.e]+(v.t===undefined?'':'・'+terrainLabels[v.t]);
+function face(v){return '<span title="'+title(v)+'" class="face '+(typeof v==='number'?'t'+v:'temple')+'">'+tileLabel(v).replace('・','<br>')+'</span>'}
+const key='oro.machu.redesign.en.v1';let g,rot=0,sel=null,role='statue',size=46,timer,saveFailed=false;
+try{g=JSON.parse(localStorage.getItem(key))}catch{}let fresh=!g;if(!g)g=setup([false,true,true]);
+function persist(){try{localStorage.setItem(key,JSON.stringify(g));saveFailed=false}catch{saveFailed=true}}
+function selectedAction(){return actions(g).find(a=>a.k===sel&&a.role===role)}
+// A recorded building move identifies the solid tile at that level.
+function tileLayers(g,preview){
+ const layers=new Map();
+ function record(k,h){if(!layers.has(k))layers.set(k,new Set());layers.get(k).add(h)}
+ for(const k of ['0,0','1,0','0,1','1,1'])record(k,1);
+ function add(m){if(m){record(m.k,m.h);record(m.l,m.h)}}
+ for(const turn of g.history)add(turn.build);
+ if(g.phase==='act')add(g.last);
+ add(preview);
+ return layers;
+}
+function frontFace(layers,k,h,frontHeight,step){
+ if(frontHeight>=h)return '';
+ let strips='';
+ for(let level=h;level>frontHeight;level--){
+  const solid=layers.get(k)?.has(level);
+  strips+='<i class="'+(solid?'tile-rim':'pillar-rim')+'" style="height:'+step+'px"></i>';
+ }
+ return '<span aria-hidden="true" class="front-face">'+strips+'</span>';
+}
+function render(){
+ clearTimeout(timer);const human=!g.players[g.seat].bot,end=g.phase==='end',c=$('controls');
+ $('players').innerHTML=g.players.map((p,i)=>'<div class="player '+(!end&&i===g.seat?'current':'')+'" style="--ink:'+colors[i]+'"><b class="dot">●</b> '+names(i)+(p.bot==='expert'?' · Expert':p.bot?' ⚙':'')+' · '+p.p+' pillars</div>').join('');
+ $('round').textContent='Round '+g.round+' / '+(10-g.players.length);
+ $('status').textContent=(end?'Construction complete':names(g.seat)+(human?' — your turn':g.players[g.seat].bot==='expert'?(g.expertPlan?' · Expert playing':' · Expert thinking…'):' · Computer playing'))+(saveFailed?' (Progress could not be saved)':'');
+ $('log').innerHTML=g.history.map(a=>'<li>'+names(a.seat)+' built at '+a.build.k+' (level '+a.build.h+'), then placed a '+roles[a.role].toLowerCase()+' at '+a.k+'</li>').reverse().join('');
+ const valid=new Map();
+ if(g.phase==='build')for(const m of moves(g,rot))valid.set(m.k,m);
+ if(g.phase==='act')for(const a of actions(g).filter(a=>a.role===role))valid.set(a.k,a);
+ if(end){const rows=scores(g),high=Math.max(...rows.map(s=>s.total));c.innerHTML='<h2>'+rows.flatMap((s,i)=>s.total===high?[names(i)]:[]).join(' &amp; ')+(rows.filter(s=>s.total===high).length>1?' win':' wins')+'</h2><table><tr><th>Player</th><th>Statues</th><th>Shrines</th><th>Pillars</th><th>Bonus</th><th>Total</th></tr>'+rows.map((s,i)=>'<tr><th>'+names(i)+'</th>'+Object.values(s).map(v=>'<td>'+v+'</td>').join('')+'</tr>').join('')+'</table>'}
+ if(g.phase==='take'){c.innerHTML='<h2>Choose a tile</h2><div class="market">'+g.market.map((m,i)=>'<button class="card" data-take="'+i+'" '+(human?'':'disabled')+'><span class="pair">'+m.tile.map(face).join('')+'</span><small>＋'+m.p+' pillars</small></button>').join('')+'</div>'}
+ if(g.phase==='build'){const m=valid.get(sel);c.innerHTML='<h2>Place your tile</h2><div class="controls"><span class="pair">'+g.hand.tile.map(face).join('')+'</span><button id="rotate">Rotate '+['→','↓','←','↑'][rot]+'</button></div><p class="hint">'+(m?'Level '+m.h+' · Cost '+m.cost+' pillars':'Choose a dashed space or a tile marked with a green dot. The direction marks the second half.')+'</p><button class="primary" id="confirm" '+(m&&human?'':'disabled')+'>Confirm build</button>'}
+ if(g.phase==='act'){const all=actions(g);c.innerHTML='<h2>Place a meeple</h2><div class="controls">'+Object.entries(roles).map(([r,name])=>'<button data-role="'+r+'" class="'+(r===role?'on':'')+'" '+(!human||!all.some(a=>a.role===r)?'disabled':'')+'>'+name+'</button>').join('')+'</div><p class="hint">'+(valid.has(sel)?(role==='statue'?'Adjacent levels score '+statueValue(g,sel)+' points':role==='worker'?'Gain '+2*g.board[sel].h+' pillars':'Pay '+g.board[sel].h+' pillars'):(role==='statue'?'Choose empty ground next to the land.':'Choose any unoccupied temple.'))+'</p><button id="confirm" class="primary" '+(human&&valid.has(sel)?'':'disabled')+'>Place '+roles[role]+'</button>'}
+ const b=g.board,[x0,x1,y0,y1]=bounds(Object.keys(b)),grid=$('grid');grid.style.setProperty('--size',size+'px');grid.style.gridTemplateColumns='repeat('+(x1-x0+5)+',var(--size))';
+ const preview=g.phase==='build'&&valid.get(sel);
+ const previewCovers=n=>preview&&(n===preview.k||n===preview.l);
+ const layers=tileLayers(g,preview);
+ // Keep all visible levels proportional while reserving most of a cell for its face.
+ const maxHeight=Math.max(preview?.h||0,...Object.values(b).map(cell=>cell.h));
+ const step=Math.min(size*.085,size*.55/maxHeight);
+ let html='';for(let y=y0-2;y<=y1+2;y++)for(let x=x0-2;x<=x1+2;x++){const k=[x,y].join(','),v=b[k],man=g.men[k],active=human&&valid.has(k),idx=preview?(k===sel?0:k===preview.l?1:-1):-1;
+ const show=idx>=0?g.hand.tile[idx]:v?.v,label=show===undefined?'':title(show);
+ // Only visible edges of a physical tile receive an outline.
+ const height=idx>=0?preview.h:(v?.h||0);
+ const frontKey=[x,y+1].join(',');
+ const frontHeight=previewCovers(frontKey)?preview.h:(b[frontKey]?.h||0);
+ const edges=near(k).map(n=>idx>=0?!previewCovers(n):previewCovers(n)||b[n]?.id!==v?.id);
+ const [east,south,west,north]=edges;
+ const outline=show===undefined?'':[
+  'border-width:'+ [north,east,south,west].map(edge=>edge?'2px':'0').join(' '),
+  'border-radius:'+ [north&&west,north&&east,south&&east,south&&west].map(corner=>corner?'2px':'0').join(' '),
+  '--left-edge:'+(west?'2px':'0px'), '--right-edge:'+(east?'2px':'0px'),
+  '--south-edge:'+(south?'2px':'0px'), 'z-index:'+(2+height)
+ ].join(';');
+ html+='<button data-k="'+k+'" aria-label="'+k+' '+label+(v?' level '+v.h:' empty ground')+'" '+(active?'':'tabindex="-1"')+' class="sq '+(show===undefined?'':'land '+(typeof show==='number'?'t'+show:'temple'))+(active?' legal':'')+(idx>=0||sel===k?' ghost':'')+(g.phase==='act'&&g.last&&[g.last.k,g.last.l].includes(k)?' recent':'')+'" style="--depth:'+(height*step)+'px;' +outline+'">'+frontFace(layers,k,height,frontHeight,step)+'<b>'+(show===undefined?'':tileLabel(show).replace('・','<br>'))+'</b>'+(v||idx>=0?'<span class="h">'+(idx>=0?preview.h:v.h)+'</span>':'')+(man?'<span class="man" title="'+names(man.owner)+' · '+roles[man.role]+'" style="--ink:'+colors[man.owner]+'">'+(man.owner+1)+({statue:'S',priest:'P',worker:'W'})[man.role]+'</span>':'')+'</button>'}
+ grid.innerHTML=html;
+ if(!human&&!end&&!$('setup').open)timer=setTimeout(computerTurn,550);
+}
+let activeSearch=null, workerURL;
+function stopSearch(){
+ if(activeSearch){activeSearch.terminate();activeSearch=null}
+}
+function computerTurn(){
+ if(g.players[g.seat].bot!=='expert'){botStep(g)}
+ else if(g.expertPlan){
+  const p=g.expertPlan;
+  const ok=g.phase==='take'?take(g,p.card):g.phase==='build'?build(g,p.m.k,p.m.r):act(g,p.a.k,p.a.role);
+  if(!ok||g.phase==='take'||g.phase==='end')delete g.expertPlan;
+ }else{
+  if(activeSearch)return;
+  const publicState={...g,decks:[[],[]]};
+  function received(plan){stopSearch();g.expertPlan=plan;computerTurn()}
+  try{
+   if(!workerURL){
+    const source=$('game-rules').textContent+'\nonmessage=e=>postMessage(expertPlan(e.data));';
+    workerURL=URL.createObjectURL(new Blob([source],{type:'text/javascript'}));
+   }
+   const worker=new Worker(workerURL);activeSearch=worker;
+   worker.onmessage=e=>{if(activeSearch===worker)received(e.data)};
+   worker.onerror=()=>{if(activeSearch===worker)received(expertPlan(publicState))};
+   worker.postMessage(publicState);
+  }catch{received(expertPlan(publicState))}
+  return;
+ }
+ resetPick();persist();render();
+}
+function resetPick(){sel=null;role='statue';rot=0}
+$('controls').onclick=e=>{const btn=e.target.closest('button');if(!btn||g.players[g.seat].bot)return;
+ if(btn.dataset.take!==undefined)take(g,+btn.dataset.take);
+ else if(btn.id==='rotate'){rot=(rot+1)%4;if(sel&&!placement(g,sel,rot))sel=null}
+ else if(btn.dataset.role){role=btn.dataset.role;sel=null}
+ else if(btn.id==='confirm'){if(g.phase==='build')build(g,sel,rot);else if(g.phase==='act'&&selectedAction())act(g,sel,role);resetPick()}
+ persist();render()
+};
+$('grid').onclick=e=>{const btn=e.target.closest('.legal');if(btn){sel=btn.dataset.k;render()}};
+function center(){const v=$('vp');v.scrollLeft=(v.scrollWidth-v.clientWidth)/2;v.scrollTop=(v.scrollHeight-v.clientHeight)/2}
+$('center').onclick=center;for(const [id,d] of [['plus',6],['minus',-6]])$(id).onclick=()=>{size=Math.min(76,Math.max(30,size+d));render();center()};
+function seats(){const old=[...$('seats').querySelectorAll('select')].map(x=>x.value);$('seats').innerHTML=Array.from({length:+$('count').value},(_,i)=>'<label>'+names(i)+'<select><option value="human">Local player</option><option value="bot">Computer</option><option value="expert">Expert</option></select></label>').join('');[...$('seats').querySelectorAll('select')].forEach((s,i)=>s.value=old[i]??(i?'bot':'human'))}
+function openSetup(){clearTimeout(timer);stopSearch();seats();$('setup').showModal()}
+$('count').onchange=seats;$('new').onclick=openSetup;$('cancel').onclick=()=>$('setup').close();$('setup').onclose=render;
+$('start').onclick=()=>{g=setup([...$('seats').querySelectorAll('select')].map(s=>s.value==='expert'?'expert':s.value==='bot'));resetPick();persist();$('setup').close();render();center()};
+render();center();if(fresh)openSetup();
+</script></html>
