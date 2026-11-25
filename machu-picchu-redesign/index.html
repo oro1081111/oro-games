@@ -10,10 +10,11 @@
 .sq.land.ghost{outline:0;border-color:#b24c12;filter:brightness(1.06)}
 header>div{min-width:0}header h1{font-size:clamp(16px,2.3vw,27px)}header button{flex-shrink:0}
 .preview-label{display:block;font-size:12px;color:#d0ddc7}
-.sq b{max-width:100%;font-size:clamp(9px,.68em,11px);overflow-wrap:anywhere;padding:2px}
-.face{overflow-wrap:anywhere;min-width:0;width:62px;padding:3px;font-size:11px}
+.sq{grid-template-columns:minmax(0,1fr)}
+.sq b{width:100%;max-width:100%;font-size:9px;white-space:nowrap;overflow-wrap:normal;padding:2px}
+.face{white-space:nowrap;overflow-wrap:normal;min-width:0;width:62px;padding:3px;font-size:10px}
 .card{min-width:0}.pair{min-width:0}.seats label{justify-content:space-between}
-@media(max-width:760px){.market{grid-template-columns:1fr 1fr}.face{width:58px;font-size:11px}.player{font-size:13px}.bar strong{font-size:14px}.panel table{font-size:12px}.panel th,.panel td{padding:5px 1px}}
+@media(max-width:760px){.market{grid-template-columns:1fr 1fr}.face{width:58px;font-size:10px}.player{font-size:13px}.bar strong{font-size:14px}.panel table{font-size:12px}.panel th,.panel td{padding:5px 1px}}
 </style>
 <header><div><small>ORO BOARD GAME DESIGN</small><h1>Founders of Machu Picchu</h1><span class="preview-label">Interface preview</span></div><button id="new">New game</button></header><main><div id="players"></div><div class="layout"><section class="mapwrap"><div class="bar"><strong id="round"></strong><div><button id="minus" aria-label="Zoom out">−</button> <button id="center">Center</button> <button id="plus" aria-label="Zoom in">＋</button></div></div><div class="viewport" id="vp"><div class="plane"><div class="grid" id="grid"></div></div></div></section><section class="panel"><div id="status" class="note"></div><div id="controls" aria-live="polite"></div><details><summary>Rules &amp; scoring</summary><p>Take one display tile and its pillars, place it, then place one meeple. Ground-level tiles must share an edge with the land. When stacking, at least one half must rest directly on an existing tile. Pillars can support the other half from empty ground (level 0). Pay 2 pillars per missing level. If both halves rest on tiles, they must span two different tiles. For example, bridging the level-1 central tile and empty ground costs 2 pillars and places the new tile at level 2. Meeples cannot be covered.</p><p>Place a Statue on empty ground sharing an edge with the land. It scores the sum of the four adjacent tile levels. When its connected empty-ground area first becomes enclosed, the builder and its owner each gain 1 pillar. Placing a Statue in an already enclosed area grants 1 pillar. A Priest costs pillars equal to the temple level and establishes a scoring Shrine. A Worker grants twice the temple level in pillars.</p><p>Each Shrine scores its effect value multiplied by its level. Summit uses the highest matching terrain level. Domain uses the largest matching connected area plus 1. Regions counts matching connected areas. Artisan uses your Worker count plus 1. Monument uses your Statue count. Only visible terrain counts, and matching terrain connects across different levels. Every 2 remaining pillars score 1 point. Players with the most remaining pillars each gain 6 bonus points, including ties.</p></details><details><summary>Turn log</summary><ol id="log"></ol></details></section></div></main>
 <dialog id="setup"><h2>Create a new game</h2><label>Players <select id="count"><option>3</option><option>4</option><option>5</option></select></label><div id="seats" class="seats"></div><p class="note">Player 1 starts the first round. Local players share this device and take turns in seat order.</p><div class="controls"><button id="start" class="primary">Start game</button><button id="cancel">Back</button></div></dialog>
@@ -207,6 +208,16 @@ function frontFace(layers,k,h,frontHeight,step){
  }
  return '<span aria-hidden="true" class="front-face">'+strips+'</span>';
 }
+function fitTileLabels(){
+ const context=document.createElement('canvas').getContext('2d');
+ for(const label of document.querySelectorAll('.sq b,.face')){
+  const style=getComputedStyle(label),fontSize=parseFloat(style.fontSize);
+  context.font=style.fontWeight+' '+style.fontSize+' '+style.fontFamily;
+  const width=Math.max(...label.innerText.split('\n').map(line=>context.measureText(line).width));
+  const available=label.clientWidth-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight);
+  if(width>available&&available>0)label.style.fontSize=(fontSize*available/width*.97)+'px';
+ }
+}
 function render(){
  clearTimeout(timer);const human=!g.players[g.seat].bot,end=g.phase==='end',c=$('controls');
  $('players').innerHTML=g.players.map((p,i)=>'<div class="player '+(!end&&i===g.seat?'current':'')+'" style="--ink:'+colors[i]+'"><b class="dot">●</b> '+names(i)+(p.bot==='expert'?' · Expert':p.bot?' ⚙':'')+' · '+p.p+' pillars</div>').join('');
@@ -243,6 +254,7 @@ function render(){
  ].join(';');
  html+='<button data-k="'+k+'" aria-label="'+k+' '+label+(v?' level '+v.h:' empty ground')+'" '+(active?'':'tabindex="-1"')+' class="sq '+(show===undefined?'':'land '+(typeof show==='number'?'t'+show:'temple'))+(active?' legal':'')+(idx>=0||sel===k?' ghost':'')+(g.phase==='act'&&g.last&&[g.last.k,g.last.l].includes(k)?' recent':'')+'" style="--depth:'+(height*step)+'px;' +outline+'">'+frontFace(layers,k,height,frontHeight,step)+'<b>'+(show===undefined?'':tileLabel(show).replace('・','<br>'))+'</b>'+(v||idx>=0?'<span class="h">'+(idx>=0?preview.h:v.h)+'</span>':'')+(man?'<span class="man" title="'+names(man.owner)+' · '+roles[man.role]+'" style="--ink:'+colors[man.owner]+'">'+(man.owner+1)+({statue:'S',priest:'P',worker:'W'})[man.role]+'</span>':'')+'</button>'}
  grid.innerHTML=html;
+ fitTileLabels();
  if(!human&&!end&&!$('setup').open)timer=setTimeout(computerTurn,550);
 }
 let activeSearch=null, workerURL;
